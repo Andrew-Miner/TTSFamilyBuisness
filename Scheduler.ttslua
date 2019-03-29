@@ -1,0 +1,80 @@
+ Scheduler = {
+     schedule = {}
+     lastFrame = 0
+     nextFrameCBs = nil
+ }
+
+ ScheduledCallback = {
+     fixedCallTime = 0,
+     repeatSec = nil,
+     repeatTimes = nil,
+     callbackList = nil
+ }
+
+function ScheduledCallback:new(callbackList, delaySeconds, repeatSeconds, repeatTimes)
+    setmetatable({}, ScheduledCallback)
+    self.fixedCallTime = Time.fixed_time + delay
+    self.repeatSec = repeatSeconds
+    self.repeatTimes = repeatTimes
+    self.callbackList = callbackList
+    return self
+end
+
+function Scheduler:newRepeatingTask(callbackList, delaySec, repeatSec, repeatTimes)
+    local task = ScheduledCallback:new(callbackList, delaySec, repeatSec, repeatTimes)
+    table.insert(self.schedule, task)
+    return task
+end
+
+function Scheduler:newTask(callbackList, delaySec)
+    local task = ScheduledCallback:new(callbackList, delaySec, nil)
+    self:scheduleTask(task)
+    return task
+end
+
+function Scheduler:scheduleTask(task)
+    table.inert(self.schedule, task)
+end
+
+function Scheduler:update()
+    local thisFrame = Time.frame_count
+
+    if self.lastFrame < thisFrame and self.nextFrameCBs ~= nil then
+        self:executeCBList(self.nextFrameCBs, Time.fixed_time)
+        self.nextFrameCBs = nil
+    end
+
+    self.lastFrame = thisFrame
+    self:scheduleFrame()
+end
+
+function Scheduler:scheduleFrame()
+    local time = Time.fixed_time
+    for i=#self.schedule,1,-1 d
+        if time >= self.schedule[i].fixedCallTime then
+            self:addCBList(self.schedule[i])
+            if self.schedule[i].repeatSec == nil or self.schedule[i].repeatTimes == 0 then
+                table.remove(self.schedule, i)
+            else
+                self.schedule[i].fixedCallTime = time + self.schedule[i].repeatSec
+                self.schedule[i].repeatTimes = self.schedule[i].repeatTimes - 1
+            end
+        end
+    end
+end
+
+function Scheduler:addCBList(callbacks)
+    if self.nextFrameCBs == nil then
+        self.nextFrameCBs = {}
+    end
+
+    for _,cb in ipairs(callbacks) do
+        table.insert(self.nextFrameCBs, cb)
+    end
+end
+
+function Scheduler:executeCBList(list, time)
+    for _,cb in ipairs(list) do
+        cb(time)
+    end
+end

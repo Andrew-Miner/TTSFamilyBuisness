@@ -1,0 +1,50 @@
+#include !/Cards/Features Still Required/Red/Contracts/Contract
+#include !/Cards/Red/Contracts/ContractNoBlue
+#include !/Cards/Features Still Required/Red/Contracts/ContractNoFam
+#include !/Cards/Features Still Required/Red/Contracts/ContractNoMob
+#include !/Cards/Features Still Required/Red/Contracts/DoubleContract
+#include !/Cards/Features Still Required/Red/Contracts/PriorityContract
+#include !/Cards/Features Still Required/Red/DoubleCross
+#include !/Cards/Features Still Required/Red/Turncoat
+#include !/Cards/Features Still Required/Red/Vendetta
+#include !/Cards/Red/Hit
+#include !/Cards/Red/MobWar
+#include !/Cards/Red/Ambush
+#include !/Cards/Red/Massacre
+
+#include !/Cards/Green/Truce
+#include !/Cards/Green/PayOff
+#include !/Cards/Green/FedCrack
+#include !/Cards/Features Still Required/Green/Intrigue
+#include !/Cards/Features Still Required/Green/Lam
+#include !/Cards/Features Still Required/Green/PoliceProtection
+#include !/Cards/Features Still Required/Green/Substitution
+
+#include !/Cards/Blue/BlueCards
+
+cardObjs = {
+    ['Contract'] = Contract,
+    ['Priority Contract'] = PriorityContract,
+    ['Double Contract'] = DoubleContract,
+    ['Contract (No Mob Power)'] = ContractNoMob,
+    ['Contract (No Blue Cards)'] = ContractNoBlue,
+    ['Truce'] = Truce,
+    ['Contract (No Family Influence)'] = ContractNoFam,
+    ['Vendetta'] = Vendetta,
+    ['Double Cross'] = DoubleCross,
+    ['Hit'] = Hit,
+    ['Mob War'] = MobWar,
+    ['Turncoat'] = Turncoat,
+    ['Ambush'] = Ambush,
+    ['ST. Valentine\'s Day Massacre'] = Massacre,
+    ['Mob Power'] = MobPower,
+    ['Family Influence'] = FamilyInfluence,
+    ['Finger'] = Finger,
+    ['Safe House'] = SafeHouse,
+    ['Pay Off'] = PayOff
+    ['Federal CrackDown'] = FedCrack,
+    ['Intrigue'] = Intrigue,
+    ['Police Protection'] = PoliceProtection,
+    ['Substitution'] = Substitution,
+    ['Take It On The Lam'] = Lam
+}

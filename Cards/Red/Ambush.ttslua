@@ -1,0 +1,13 @@
+#include !/Cards/Card
+
+Ambush = Card:new('Ambush', 'Start a Mob War (2 executed each turn).', 'Red', 1, false)
+
+function Ambush:new()
+    setmetatable({}, MobWar)
+    return self
+end
+
+function Ambush:cardFunction(playerColor, closestColor)
+    HitList:startMobWar(2)
+    return 'deciding'
+end

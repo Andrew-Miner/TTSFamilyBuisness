@@ -1,0 +1,218 @@
+#include Zones
+#include Player/PlayerList
+#include MobsterConstants
+#include Cards/CardData
+
+CONSTANTS = {
+    discardPosHigh = {-13.31, 3.1, -0.03},
+    discardPos = {-13.31, 1.1, -0.03},
+    drawPos = {-5.23, 2.96, 0.02},
+}
+
+function contains(list, object)
+    if list ~= nil then
+        for _,obj in pairs(list) do
+            if obj.getGUID() == object.getGUID() then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function tableLength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
+function clearTable()
+    local table = getAllObjects()
+    for key,value in pairs(table) do
+        if value.getGUID() != self.getGUID() then
+            if value.tag ~= 'Scripting' and value.tag ~= 'Tile' and value.tag ~= 'Clock' then
+                print(value.tag)
+                destroyObject(value)
+            end
+        end
+    end
+end
+
+function dealCards()
+    local cZone = getObjectFromGUID(DRAW_ZN_GUID)
+    for _,obj in pairs(cZone.getObjects()) do
+        if obj ~= nil then
+            if obj.tag == 'Deck' and obj.getName() == 'Cards' then
+                obj.deal(5)
+                break
+            end
+        end
+    end
+end
+
+function spawnCards()
+    local cards = spawnObject({
+        type = 'DeckCustom',
+        position = {-10,-10,-10},
+        scale = {1.75, 1, 1.76},
+        rotation = {0, 180, 0},
+        snap_to_grid = true,
+        callback_function = cardSpawnCallback
+    })
+    cards.setCustomObject({
+        face = 'http://i.imgur.com/yt48q1A.jpg',
+        back = 'http://i.imgur.com/dlH3R3r.jpg',
+        number = 57
+    })
+    return cards
+end
+
+
+function cardSpawnCallback(cards)
+    cards.setName('Cards')
+    --cards.flip()
+    cards.use_gravity = false
+
+    for i,card in ipairs(cards.getObjects()) do
+        local pos = i
+        for _,cObj in pairs(cardObjs) do
+            if pos <= cObj.count then
+                local obj = cards.takeObject({
+                    index = 0,
+                    position = {-5.23, 3, 0.02},--{-5.23, 1.29, 0.02},
+                    smooth = false,
+
+                    callback_function = function(obj)
+                        obj.setName(cObj.name)
+                        obj.setDescription(cObj.description)
+                    end
+                })
+                break
+            else
+                pos = pos - cObj.count
+            end
+        end
+    end
+
+    Wait.time(function()
+         local cZone = getObjectFromGUID(DRAW_ZN_GUID)
+         for _,obj in pairs(cZone.getObjects()) do
+             if obj.tag == 'Deck' then
+                 obj.setName('Cards')
+                 obj.flip()
+                 Wait.time(function() obj.shuffle() end, 0.5)
+                 break
+            end
+         end
+     end, 0.5)
+end
+
+function buildPlayerObjs()
+    PlayerList:clear()
+
+    local usedMobs = {}
+    local unprefferedPlayers = {}
+    local players = getSeatedPlayers()
+
+    for _,color in pairs(players) do
+        if MOB_COLORS[color] ~= nil and usedMobs[MOB_COLORS[color]] == nil then
+            usedMobs[MOB_COLORS[color]] = true
+            PlayerList:addPlayer(color, MOB_COLORS[color])
+        else
+            unprefferedPlayers[color] = true
+        end
+    end
+
+    for color,_ in pairs(unprefferedPlayers) do
+        for _,mob in pairs(MOB_COLORS) do
+            if usedMobs[mob] == nil then
+                usedMobs[mob] = true
+                PlayerList:addPlayer(color, mob)
+                break
+            end
+        end
+    end
+end
+
+function distributeMobs()
+    local count = 0
+    local mobsters = PlayerList:getMobsters()
+    for pColor, mob in pairs(mobsters) do
+        local mobDeck = nil
+        Wait.time(function()
+            if mob == MOB_COLORS['Red'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/zcX4TaS.jpg',
+                            'http://i.imgur.com/HExYMXH.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            elseif mob == MOB_COLORS['Purple'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/cKPZODZ.jpg',
+                            'http://i.imgur.com/biOb6kr.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            elseif mob == MOB_COLORS['Yellow'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/8ndPVD5.jpg',
+                            'http://i.imgur.com/bSkI6mF.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            elseif mob == MOB_COLORS['Green'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/xB6Xa5a.jpg',
+                            'http://i.imgur.com/YxqaGdp.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            elseif mob == MOB_COLORS['Blue'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/B2SouMl.jpg',
+                            'http://i.imgur.com/dGBOinz.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            elseif mob == MOB_COLORS['White'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/DRFypZk.jpg',
+                            'http://i.imgur.com/SigBtap.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            end
+        end, 0.5*count)
+        count = count + 1
+    end
+end
+
+function spawnMobDeck(name, size, frontFace, backFace, callBack)
+    local cards = spawnObject({
+        type = 'DeckCustom',
+        scale = {1.75, 1, 1.76},
+        rotation = {0, 180, 0},
+        snap_to_grid = true,
+
+        callback_function = function(obj)
+            obj.setName(name)
+            callBack(obj)
+        end
+    })
+
+    cards.setCustomObject({
+        face = frontFace,
+        back = backFace,
+        number = size
+    })
+    return cards
+end
+
+function distributeMobDeck(playerColor, mobDeck)
+    local pos = Player[playerColor].getHandTransform().position
+    local player = PlayerList.getPlayer(playerColor)
+    for i,pos in pairs(_G['c' .. player.color].positions) do
+        local obj = mobDeck.takeObject({
+            position = pos,
+            smooth = false,
+            rotation = data.rotation,
+
+            callback_function = function(obj)
+                obj.use_snap_points = true
+                print(getMobsterDataByIndex(mobDeck.getName(), i).name)
+                obj.setName(mobDeck.getName())
+                obj.setDescription(getMobsterDataByIndex(mobDeck.getName(), i).name)
+                player:addMobCard(obj)
+            end
+        })
+    end
+end

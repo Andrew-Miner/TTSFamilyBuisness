@@ -1,0 +1,36 @@
+#include !/Cards/Card
+
+DoubleCross = Card:new('Double Cross',
+                       'Place 1 mobsters from all opponents on the Hit List.',
+                       'Red', 1, false)
+
+function DoubleCross:new()
+    setmetatable({}, DoubleCross)
+    return self
+end
+
+function DoubleCross:cardFunction(playerColor, closestColor)
+    UI.show('doneButton')
+    UI.setAttribute('doneButton', 'visibility', playerColor)
+    UI.setAttribute('doneButton', 'textColor', 'white')
+    local players = PlayerList:getPlayers()
+    local off = 0
+    for _,p in ipairs(players) do
+        if p.color ~= playerColor then
+            local card = p:removeMobCard()
+            if card then
+                card.setPositionSmooth(HitListConsts.organizingList[_ - off], false, false)
+                card.setRotationSmooth({0, 180, 0}, false, false)
+            else
+                off = off + 1
+            end
+        end
+    end
+    return 'organizing_list'
+end
+
+function DoubleCross:responseScript(playerColor, responderColor, responseCard)
+    UI.hide('doneButton')
+    addCardsFromTable(HitList)
+    return false
+end

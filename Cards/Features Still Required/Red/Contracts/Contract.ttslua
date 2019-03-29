@@ -1,0 +1,50 @@
+#include !/Cards/Card
+
+Contract = Card:new('Contract',
+                    'Place an opponent\'s mobster on the Hit List.',
+                    'Red', 12, true, false, 'Contract', true
+                    {'Family Influence', 'Mob Power'})
+
+function Contract:new(name, description, count, targetLabel, waitForResponse, responses)
+        setmetatable({}, Contract)
+
+        self.name = name
+        self.description = description
+        self.count = count
+        self.targetLabel = targetLabel
+        self.waitForResponse = waitForResposne,
+        self.responses = responses
+
+        return self
+end
+
+function Contract:cardFunction(playerColor, closestColor)
+    UI.show('sickButton')
+    UI.setAttribute('sickButton', 'visibility', closestPlayer)
+    UI.setAttribute('sickButton', 'textColor', 'white')
+    return 'waiting_for_response'
+end
+
+function Contract:responseScript(playerColor, responderColor, responseCard)
+    UI.hide('sickButton')
+    local card = responseCard
+    if card == 'Family Influence' then
+        return true
+    elseif card == 'Mob Power' then
+        local player = PlayerList:getPlayer(playerColor)
+        if player.mobCount >= 1 then
+            -- Add 1 Attacker Mobster to HitList
+            local mob = player:removeMobCard()
+            hitList.call('addMobster', { mob, false })
+        end
+        return true
+    else
+        local responder = PlayerList:getPlayer(playerColor)
+        if responder.mobCount >= 1 then
+            -- Add 1 Defender Mobster to HitList
+            local mob = responder:removeMobCard()
+            hitList.call('addMobster', { mob, false })
+        end
+        return false
+    end
+end

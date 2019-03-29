@@ -1,0 +1,38 @@
+#include !/Cards/Card
+
+Substitution = Card:new('Substitution',
+                        'Replace 1 mobster on the Hit List with any 1 mobster in play.',
+                        'Green', 2, true. true, 'Substitute', false)
+
+function Substitution:new()
+    setmetatable({}, Substitution)
+    return self
+end
+
+function Substitution:cardFunction(playerColor, closestColor)
+    if HitList:length() == 0 then
+        return 'deciding'
+    end
+
+    local player = PlayerList:getPlayer(closestColor)
+    if player:mobsterCount() == 0 then
+        return 'deciding'
+    end
+
+    local mobNames = {}
+    local length = HitList:length()
+    for i=1,length,1 do
+        table.insert(mobNames, HitList:getMobsterByIndex(i).getDescription())
+        print(mobNames[i])
+    end
+
+    MobMenu:rebuildMenu(mobNames)
+    mobData.call('rebuildMenu', {mobNames})
+    Wait.time(function()
+        MobMenu:show()
+        MobMenu:setVisibility(playerColor)
+        UI.hide('targetLabel')
+        UI.hide('targetName')
+    end, 1)
+    return 'mobster_menu'
+end

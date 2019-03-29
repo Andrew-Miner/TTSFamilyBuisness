@@ -1,0 +1,13 @@
+#include !/Cards/Card
+
+MobWar = Card:new('Mob War', 'Start a Mob War.', 'Red', 1, false)
+
+function MobWar:new()
+    setmetatable({}, MobWar)
+    return self
+end
+
+function MobWar:cardFunction(playerColor, closestColor)
+    HitList:startMobWar()
+    return 'deciding'
+end

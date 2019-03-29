@@ -1,0 +1,175 @@
+#include !/Utils
+#include !/MobsterConstants
+
+HitListConsts = {
+    listRotation = {0.00, 180.00, 0.00},
+
+    deadPos = {39.78, 3.13, 0.07},
+    nextPos = {31.99, 1.03, -0.02},
+
+    hRow1_Z = 0.00,
+    hRow2_Z = -6.00,
+    hRow3_Z = -11.51,
+
+    positions = {
+        -- Next
+        {31.99, 1.03, 0.00},
+
+        {27.97, 1.03, 0.00},
+        {23.98, 1.03, 0.00},
+        {20.00, 1.03, 0.00},
+        {16.02, 1.03, 0.00},
+        {11.98, 1.03, 0.00},
+        {7.99, 1.03, 0.00},
+        {4.02, 1.03, 0.00},
+        {-0.02, 1.03, 0.00},
+
+        -- Row 2
+        {0.00, 1.03, -6.00},
+        {4.00, 1.03, -6.00},
+        {7.99, 1.03, -6.00},
+        {11.98, 1.03, -6.00},
+        {15.97, 1.03, -6.00},
+        {20.00, 1.03, -6.00},
+        {23.97, 1.03, -6.00},
+        {27.99, 1.03, -6.00},
+
+        -- Row 3
+        {27.97, 1.03, -11.51},
+        {23.94, 1.03, -11.51},
+        {19.98, 1.03, -11.51},
+        {15.98, 1.03, -11.51},
+        {11.99, 1.03, -11.51},
+        {7.99, 1.03, -11.51},
+        {3.97, 1.03, -11.51},
+        {0.02, 1.03, -11.51}
+    },
+
+    organizingList = {
+        {32.04, 1.03, 6.11},
+        {28.02, 1.03, 6.11},
+        {24.13, 1.03, 6.11},
+        {20.17, 1.03, 6.11},
+        {16.27, 1.03, 6.11},
+        {12.41, 1.03, 6.11},
+        {8.50, 1.03, 6.11},
+        {4.51, 1.03, 6.11},
+        {0.55, 1.03, 6.11},
+        {-3.36, 1.03, 6.11}
+    },
+}
+
+function leftShiftList(hitList, startIndex, shiftAmount)
+    local index = startIndex - shiftAmount
+    local cur = startIndex
+
+    for i=index, hitList.length(), 1 do
+        hitList.hitList[cur].setPositionSmooth(HitListConsts.positions[i], false, false)
+        hitList.hitList[i] = hitList.hitList[cur]
+        cur = cur + 1
+    end
+end
+
+function rightShiftList(hitList, endIndex, shiftAmount)
+    for i=hitList:length(), endIndex, -1 do
+        local mob = hitList:getMobsterByIndex(i)
+        mob.setPositionSmooth(HitListConsts.positions[i + shiftAmount], false, false)
+        hitList.hitList[i + shiftAmount] = hitList.hitList[i]
+    end
+end
+
+function addCardsFromTable(hitList)
+    local objects = getAllObjects()
+    local newMobs = {}
+
+    for _,obj in pairs(objects) do
+        if obj.tag == 'Card' and isMobster(obj) and obj.getLock() ~= true then
+            if contains(deadZone.getObjects(), obj) ~= true then
+                table.insert(newMobs, obj)
+            end
+        end
+    end
+
+    if newMobs == nil then
+        return
+    end
+
+    sortMobstersByPos(newMobs)
+    for _,mob in ipairs(newMobs) do
+        hitList:addMobster({mob, true})
+    end
+end
+
+function sortMobstersByPos(list)
+    if list == nil then
+        return
+    end
+
+    table.sort(list, function(obj1, obj2)
+        local p1 = obj1.getPosition()
+        local p2 = obj2.getPosition()
+
+        local row1 = getClosestRow(p1.z)
+        local row2 = getClosestRow(p2.z)
+
+        if row1 < row2 then
+            return true
+        elseif row1 > row2 then
+            return false
+        end
+
+        -- row1 == row2
+        if row1 == 2 then
+            if p1.x < p2.x then
+                return true
+            end
+        elseif p1.x > p2.x then
+            return true
+        end
+
+        return false
+    end)
+end
+
+function getClosestRow(zPos)
+    local rowDistances = {
+        [1] = math.abs(zPos - HitListConsts.hRow1_Z),
+        [2] = math.abs(zPos - HitListConsts.hRow2_Z),
+        [3] = math.abs(zPos - HitListConsts.hRow3_Z),
+    }
+
+    local row = 1
+    local min = rowDistances[1]
+    for _,dis in pairs(rowDistances) do
+        if dis < min then
+            row = _
+            min = dis
+        end
+    end
+
+    return row
+end
+
+function spairs(t, order)
+    -- https://stackoverflow.com/questions/15706270/sort-a-table-in-lua
+    -- collect the keys
+    local keys = {}
+    for k in pairs(t) do keys[#keys+1] = k end
+
+    -- if order function given, sort by it by passing the table and keys a, b,
+    -- otherwise just sort the keys
+    if order then
+        table.sort(keys, function(a,b) return order(t, a, b) end)
+    else
+        table.sort(keys)
+    end
+
+    -- return the iterator function
+    local i = 0
+    return function()
+        i = i + 1
+        if keys[i] then
+            return keys[i], t[keys[i]]
+        end
+    end
+end

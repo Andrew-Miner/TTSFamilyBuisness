@@ -1,0 +1,33 @@
+#include !/Cards/Card
+
+Hit = Card:new('Hit',
+               'Execute any mobster. Place 1 of your mobsters on the Hit List.',
+               'Red', 1, true, true, 'Hit', false)
+
+function Hit:new()
+    setmetatable({}, Hit)
+    return self
+end
+
+function Hit:cardFunction(playerColor, closestColor)
+    local hit = PlayerList:getPlayer(closestPlayer):removeMobCard()
+
+    if hit ~= nil then
+        local deadPile = HitList:getDeadPile()
+        if deadPile ~= nil then
+            deadPile.putObject(hit)
+        else
+            if hit.is_face_down ~= true then
+                hit.flip()
+            end
+            hit.setPositionSmooth({39.78, 2.4, 0.07}, false, true)
+            hit.setRotationSmooth({0.00, 180.00, 0.00}, false, true)
+        end
+
+        local list = PlayerList:getPlayer(playerColor):removeMobCard()
+        if list ~= nil then
+            HitList:addMobster(list, true)
+        end
+    end
+    return 'deciding'
+end

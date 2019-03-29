@@ -1,0 +1,31 @@
+#include Contract
+
+ContractNoFam = Contract:new('Contract (No Family Influence)',
+                             'Place an opponent\'s mobster on the Hit List.',
+                             3, 'Contract', true,
+                             {'Mob Power'})
+
+function ContractNoFam:new()
+    setmetatable({}, ContractNoFam)
+    return self
+end
+
+function ContractNoFam:responseScript(playerColor, responderColor, responseCard)
+    UI.hide('sickButton')
+    local card = responseCard
+    if card == 'Mob Power' then
+        if playerList.call('getData', { playerColor }).mobCount >= 1 then
+            -- Add 1 Attacker Mobster to HitList
+            local mob = playerList.call('removeMobCard', { playerColor })
+            hitList.call('addMobster', { mob, false })
+        end
+        return true
+    else
+        if playerList.call('getData', { responderColor }).mobCount >= 1 then
+            -- Add 1 Defender Mobster to HitList
+            local mob = playerList.call('removeMobCard', { responderColor })
+            hitList.call('addMobster', { mob, false })
+        end
+        return false
+    end
+end

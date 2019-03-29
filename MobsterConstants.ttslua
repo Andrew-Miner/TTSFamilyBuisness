@@ -1,0 +1,381 @@
+MOB_COLORS = {
+    Red = 'New York Mob',
+    Yellow = 'Moran Gang',
+    Green = 'Bank Robbers',
+    Blue = 'Capone Mob',
+    Purple = 'Purple Gang',
+    White = 'Murder Inc.'
+}
+
+function isMobster(mobCard)
+    for _,m in pairs(MOB_COLORS) do
+        if m == mobCard.getName() then
+            return true
+        end
+    end
+    return false
+end
+
+function getMobByMobster(mobCard)
+    for mob,data in pairs(MOB_DATA) do
+        if data.card_data[mobCard.getName()] ~= nil then
+            return mob
+        end
+    end
+    return nil
+end
+
+function getMobByMobsterName(mobsterName)
+    for mob,data in pairs(MOB_DATA) do
+        if data.card_data[mobsterName] ~= nil then
+            return mob
+        end
+    end
+    return nil
+end
+
+function getMobsterData(mobCard)
+    if MOB_DATA[mobCard.getName()] ~= nil then
+        return MOB_DATA[mobCard.getName()].card_data[mobCard.getDescription()]
+    end
+    return nil
+end
+
+function getMobsterDataByName(name)
+    for mob,data in pairs(MOB_DATA) do
+        if data.card_data[name] ~= nil then
+            return data.card_data[name]
+        end
+    end
+    return nil
+end
+
+function getMobsterDataByAssetName(assetName)
+    for _,mob in pairs(MOB_DATA) do
+        for name,data in pairs(mob.card_data) do
+            if data.asset_name == assetName then
+                print(assetName)
+                print(data.asset_name)
+                print(data.name)
+                return data
+            end
+        end
+    end
+end
+
+function getMobsterDataByIndex(mobName, index)
+    local count = 1
+    for _,data in pairs(MOB_DATA[mobName].card_data) do
+        if 9 - count + 1 == index then
+            return data
+        end
+        count = count + 1
+    end
+    return nil
+end
+
+function getMobData(mobName)
+    return MOB_DATA[mobName]
+end
+
+MOB_DATA = {
+    ['New York Mob'] = {
+        color = 'Red',
+        card_data = {
+            ['Frank Costello'] = {
+                name = 'Frank Costello',
+                asset_name = 'Frank Costello'
+            },
+
+            ['Joe Valachi'] = {
+                name = 'Joe Valachi',
+                asset_name = 'Joe Valachi'
+            },
+
+            ['Meyer Lansky'] = {
+                name = 'Meyer Lansky',
+                asset_name = 'Meyer Lansky'
+            },
+
+            ['Joe Bananas'] = {
+                name = 'Joe Bananas',
+                asset_name = 'Joe Bananas'
+            },
+
+            ['Albert Anastasia'] = {
+                name = 'Albert Anastasia',
+                asset_name = 'Albert Anastasi'
+            },
+
+            ['Bugsy Siegel'] = {
+                name = 'Bugsy Siegel',
+                asset_name = 'Bugsy Siegel'
+            },
+
+            ['Lucky Luciano'] = {
+                name = 'Bugsy Siegel',
+                asset_name = 'Bugsy Siegel'
+            },
+
+            ['Vito Genovese'] = {
+                name = 'Vito Genovese',
+                asset_name = 'Vito Genovese'
+            },
+
+            ['Dutch Shultz'] = {
+                name = 'Dutch Shultz',
+                asset_name = 'Dutch Shultz'
+            }
+        }
+    },
+
+    ['Moran Gang'] = {
+        color = 'Yellow',
+        card_data = {
+            ['James Clark'] = {
+                name = 'James Clark',
+                asset_name = 'moran3'
+            },
+
+            ['Hymie Weiss'] = {
+                name = 'Hymie Weiss',
+                asset_name = 'moran4'
+            },
+
+            ['Willie Marks'] = {
+                name = 'Willie Marks',
+                asset_name = 'moran5'
+            },
+
+            ['Al Weinshank'] = {
+                name = 'Al Weinshank',
+                asset_name = 'moran6'
+            },
+
+            ['John May'] = {
+                name = 'John May',
+                asset_name = 'moran7'
+            },
+
+            ['Frank Gusenberg'] = {
+                name = 'Frank Gusenberg',
+                asset_name = 'moran8'
+            },
+
+            ['Bugs Moran'] = {
+                name = 'Bugs Moran',
+                asset_name = 'moran9'
+            },
+
+            ['Adam Heyer'] = {
+                name = 'Adam Heyer',
+                asset_name = 'moran1'
+            },
+
+            ['Pete Gusenberg'] = {
+                name = 'Pete Gusenberg',
+                asset_name = 'moran2'
+            }
+        }
+    },
+
+    ['Bank Robbers'] = {
+        color = 'Red',
+        card_data = {
+            ['Kate \"Ma\" Barker'] = {
+                name = 'Kate \"Ma\" Barker',
+                asset_name = 'bank1'
+            },
+
+            ['\"Baby Face\" Nelson'] = {
+                name = '\"Baby Face\" Nelson',
+                asset_name = 'bank2'
+            },
+
+            ['Clyde Barrow'] = {
+                name = 'Clyde Barrow',
+                asset_name = 'bank3'
+            },
+
+            ['\"Machine Gun\" Kelly'] = {
+                name = '\"Machine Gun\" Kelly',
+                asset_name = 'bank4'
+            },
+
+            ['\"Pretty Boy\" Floyd'] = {
+                name = '\"Pretty Boy\" Floyd',
+                asset_name = 'bank5'
+            },
+
+            ['Alvin Karpis'] = {
+                name = 'Alvin Karpis',
+                asset_name = 'bank6'
+            },
+
+            ['\"Doc\" Barker'] = {
+                name = '\"Doc\" Barker',
+                asset_name = 'bank7'
+            },
+
+            ['Desperate Dan'] = {
+                name = 'Desperate Dan',
+                asset_name = 'bank8'
+            },
+
+            ['Bonnie Parker'] = {
+                name = 'Bonnie Parker',
+                asset_name = 'bank9'
+            }
+        }
+    },
+
+    ['Capone Mob'] = {
+        color = 'Red',
+        card_data = {
+            ['Same \"The Gorilla\" Davis'] = {
+                name = 'Same \"The Gorilla\" Davis',
+                asset_name = 'capone1'
+            },
+
+            ['Paul \"The Waiter\" Ricca'] = {
+                name = 'Paul \"The Waiter\" Ricca',
+                asset_name = 'capone2'
+            },
+
+            ['Scarface Al'] = {
+                name = 'Scarface Al',
+                asset_name = 'capone3'
+            },
+
+            ['Anthony \"Big Tuna\" Accardo'] = {
+                name = 'Anthony \"Big Tuna\" Accardo',
+                asset_name = 'capone4'
+            },
+
+            ['Sam \"Golfbag\" Hunt'] = {
+                name = 'Sam \"Golfbag\" Hunt',
+                asset_name = 'capone5'
+            },
+
+            ['Three-Fingered Jack'] = {
+                name = 'Three-Fingered Jack',
+                asset_name = 'capone6'
+            },
+
+            ['Machine Gun Jack'] = {
+                name = 'Machine Gun Jack',
+                asset_name = 'capone7'
+            },
+
+            ['Frank \"The Enforcer\" Nitti'] = {
+                name = 'Frank \"The Enforcer\" Nitti',
+                asset_name = 'capone8'
+            },
+
+            ['Jacob \"Greasy Thumb\" Guzik'] = {
+                name = 'Jacob \"Greasy Thumb\" Guzik',
+                asset_name = 'capone9'
+            }
+        }
+    },
+
+    ['Purple Gang'] = {
+        color = 'Red',
+        card_data = {
+            ['Sammy Purple'] = {
+                name = 'Sammy Purple',
+                asset_name = 'purple1'
+            },
+
+            ['Benjamin Bernstein'] = {
+                name = 'Benjamin Bernstein',
+                asset_name = 'pruple2'
+            },
+
+            ['Peter Licavoli'] = {
+                name = 'Peter Licavoli',
+                asset_name = 'purple3'
+            },
+
+            ['Joseph Zerilli'] = {
+                name = 'Joseph Zerilli',
+                asset_name = 'purple4'
+            },
+
+            ['Joseph Bernstein'] = {
+                name = 'Joseph Bernstein',
+                asset_name = 'pruple5'
+            },
+
+            ['Abe Axler'] = {
+                name = 'Abe Axler',
+                asset_name = 'purple6'
+            },
+
+            ['Eddie Fletcher'] = {
+                name = 'Eddie Fletcher',
+                asset_name = 'purple7'
+            },
+
+            ['Harry Fleisher'] = {
+                name = 'Harry Fleisher',
+                asset_name = 'purple8'
+            },
+
+            ['Louis Fleisher'] = {
+                name = 'Louis Fleisher',
+                asset_name = 'purple9'
+            }
+        }
+    },
+
+    ['Murder Inc.'] = {
+        color = 'Red',
+        card_data = {
+            ['Anthony \"The Duke\" Maffetore'] = {
+                name = 'Anthony \"The Duke\" Maffetore',
+                asset_name = 'murder1'
+            },
+
+            ['Harry \"Happy\" Maione'] = {
+                name = 'Harry \"Happy\" Maione',
+                asset_name = 'murder2'
+            },
+
+            ['Allie Tick Tock'] = {
+                name = 'Allie Tick Tock',
+                asset_name = 'murder3'
+            },
+
+            ['Pittsburgh Phil'] = {
+                name = 'Pittsburgh Phil',
+                asset_name = 'murder4'
+            },
+
+            ['Martin \"Bugsy\" Goldstein'] = {
+                name = 'Martin \"Bugsy\" Goldstein',
+                asset_name = 'murder5'
+            },
+
+            ['Frank \"The Dasher\" Abbendado'] = {
+                name = 'Frank \"The Dasher\" Abbendado',
+                asset_name = 'murder6'
+            },
+
+            ['Irving \"Knadles\" Nitzberg'] = {
+                name = 'Irving \"Knadles\" Nitzberg',
+                asset_name = 'murder7'
+            },
+
+            ['Abraham \"Kid Twist\" Reles'] = {
+                name = 'Abraham \"Kid Twist\" Reles',
+                asset_name = 'murder8'
+            },
+
+            ['Abraham \"Pretty\" Levine'] = {
+                name = 'Abraham \"Pretty\" Levine',
+                asset_name = 'murder9'
+            }
+        }
+    }
+}

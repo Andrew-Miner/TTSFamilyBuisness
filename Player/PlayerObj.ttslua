@@ -1,0 +1,89 @@
+#include !/ColorData
+
+PlayerObj = {
+    color = 'White',
+    livingMobs = 9,
+    mobName = '',
+    mobCount = 0,
+    mobCards = {}
+}
+
+function PlayerObj:new(color, mobName)
+    setmetatable({}, PlayerObj)
+    self.color = color
+    self.mobName = mobName
+    self.livingMobs = 9
+    self.mobCount = 0
+    self.mobCards = {}
+    return self
+end
+
+function PlayerObj:isAlive()
+    return self.livingMobs > 0
+end
+
+function PlayerObj:mobsterCount()
+    return self.livingMobs
+end
+
+function PlayerObj:getMobCards()
+    return self.mobCards
+end
+
+-- Returns True if isAlive
+-- Returns Flase otherwise
+function PlayerObj:killedMobster()
+    if self.livingMobs <= 0 then
+        return false
+    end
+    self.livingMobs = self.livingMobs - 1
+    return self.livingMobs > 0
+end
+
+-- Returns True if successful
+-- Returns False otherwise
+function PlayerObj:revivedMobster()
+    if self.livingMobs > 8 then
+        return false
+    end
+    self.livingMobs = self.livingMobs + 1
+    return true
+end
+
+function PlayerObj:addMobCard(card)
+    if self.mobCount < 9 then
+        self.mobCount = self.mobCount + 1
+        table.insert(self.mobCards, self.mobCount, card)
+        card.setPositionSmooth(_G['c' .. self.color].positions[9 - self.mobCount + 1], false, false)
+        card.setRotationSmooth(_G['c' .. self.color].rotation)
+
+        if card.is_face_down then
+            card.flip()
+        end
+
+        card.setLock(true)
+        return true
+    end
+    return false
+end
+
+function PlayerObj:removeMobCard()
+    if self.mobCount == 0 then
+        return nil
+    end
+
+    local mob = self.mobCards[self.mobCount]
+    table.remove(self.mobCards, self.mobCount)
+    self.mobCount = self.mobCount - 1
+    mob.setLock(false)
+    return mob
+end
+
+function PlayerObj:getMobCardIndex(card)
+    for _,c in ipairs(self.mobCards) do
+        if c.getGUID() == card.getGUID() then
+            return _
+        end
+    end
+    return 0
+end

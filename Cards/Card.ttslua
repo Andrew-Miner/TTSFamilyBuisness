@@ -1,0 +1,49 @@
+#include !/HitList/HitList
+
+Card = {
+    count = 0,
+    type = '0',
+    hasTarget = false,
+    targetSelf = false,
+    targetLabel = 'error',
+    waitForResponse = false,
+    name = 'name',
+    description = 'description',
+    responses = {}
+}
+
+function Card:new(name, description, type, count, hasTarget, targetSelf, targetLabel, waitForResponse, responses)
+    setmetatable({}, Card)
+
+    self.name = name
+    self.description = description
+    self.type = type
+    self.count = count
+    self.hasTarget = hasTarget
+    self.targetLabel = targetLabel
+    self.targetSelf = targetSelf
+    self.waitForResponse = waitForResponse
+    self.responses = responses
+
+    return self
+end
+
+function Card:cardFunction(playerColor, closestColor)
+
+end
+
+function Card:dropEvent(params)
+
+end
+
+function Card:pickUpEvent(params)
+
+end
+
+function Card:updateEvent(params)
+
+end
+
+function Card:responseScript(playerColor, responderColor, responseCard)
+
+end

@@ -1,0 +1,268 @@
+#include HitListUtils
+#include !/Zones
+#include !/Player/PlayerList
+
+
+HitList = {
+    warActive = false,
+    killPerTurn = 1,
+    mobCount = 0,
+    hitList = {},
+
+    drawZone = nil,
+    deadZone = nil,
+    nextZone = nil,
+}
+
+function HitList:new(killPerTurn)
+    setmetatable({}, HitList)
+    self.killPerTurn = killPerTurn
+    self.mobCount = 0
+    self.hitList = {}
+    self.warActive = false
+    return self
+end
+
+function HitList:init()
+    self.drawZone = getObjectFromGUID(DRAW_ZN_GUID)
+    self.deadZone = getObjectFromGUID(DEAD_ZN_GUID)
+    self.nextZone = getObjectFromGUID(NEXT_ZN_GUID)
+end
+
+function HitList:startMobWar(killPerTurn)
+    if self.mobCount = 0 then
+        return false
+    end
+
+    self.warActive = true
+    if killPerTurn ~= nil then
+        self.killPerTurn = killPerTurn
+    end
+    return true
+end
+
+function HitList:stopMobWar()
+    self.warActive = false
+    self.killPerTurn = 1
+end
+
+function HitList:isMobWar()
+    return self.warActive
+end
+
+function HitList:reset()
+    self.mobCount = 0
+    self.stopMobWar()
+end
+
+function HitList:length()
+    return self.mobCount
+end
+
+function HitList:setKillAmount(killPerTurn)
+    self.killPerTurn = killPerTurn
+end
+
+function HitList:getKillAmount()
+    return self.killPerTurn
+end
+
+function HitList:contains(mobCard)
+    if self.getIndex(mobCard) ~= nil then
+        return true
+    end
+    return false
+end
+
+function HitList:getMobsterNames()
+    local tbl = {}
+    for _,m in ipairs(self.hitList) do
+        table.insert(tbl, m.getDescription())
+    end
+    return tbl
+end
+
+function HitList:getDeadPile()
+    if self.deadZone == nil then
+        self.init()
+    end
+
+    local objs = self.deadZone.getObjects()
+    if objs ~= nil then
+        for_,obj in ipairs(objs) do
+            if obj.tag =='Deck' or obj.tag == 'Card' then
+                return obj
+            end
+        end
+    end
+    return nil
+end
+
+function HitList:getIndex(mobCard)
+    for _,mob in ipairs(self.hitList) do
+        if mob.getGUID() == mobCard.getGUID() then
+            return _
+        end
+    end
+    return 0
+end
+
+function HitList:getMobsterByIndex(index)
+    return hitList[index]
+end
+
+function HitList:setLock(lock)
+    for i,card in ipairs(self.hitList) do
+        card.setLock(lock)
+
+        if lock then
+            card.setPositionSmooth(HitListConst.positions[i], false, true)
+            card.setRotationSmooth(HitListConst.listRotation, false, true)
+        end
+
+        if i == mobCount then -- ?
+            break
+        end
+    end
+end
+
+function HitList:processDraw()
+    if self.mobCount == 0 then
+        self.stopMobWar()
+        return
+    end
+
+    for i=1,self.killPerTurn,1 do
+        Wait.time(function()
+            if self.mobCount > 0 then
+                self.discardMobster(1, true)
+            end
+        end, 0.5*(i-1))
+    end
+    return 0.5*(killPerTurn - 1)
+end
+
+function HitList:discardMobster(index, fast)
+    if self.mobCount < index then
+        return nil
+    end
+
+    local deadPile = getDeadPile()
+    local mobster = removeMobsterByIndex(index, HitListConsts.deadPos,
+                                         HitListConsts.listRotation, fast)
+
+    if deadPile ~= nil then
+        deadPile.putObject(mobster)
+    else
+        mobster.flip()
+        mobster.setPositionSmooth(HitListConsts.deadPos, false, false)
+    end
+
+    local player = PlayerList:getPlayerByMobster(mobster.getName())
+    player:killedMobster()
+
+    return mobster
+end
+
+function HitList:discardMobster(mobCard, fast)
+    local deadPile = getDeadPile()
+
+    if deadPile ~= nil then
+        deadPile.putObject(mobCard)
+    else
+        if ~mobCard.is_face_down then
+            mobCard.flip()
+        end
+        mobCard.setPositionSmooth(HitListConsts.deadPos, false, fast)
+    end
+
+    local player = PlayerList:getPlayerByMobster(mobCard.getName())
+    player:killedMobster()
+end
+
+function HitList:addMobster(mobCard, fast)
+    self.hitList[self.mobCount + 1] = mobCard
+    mobCard.setRotationSmooth(HitListConsts.listRotation, false, fast)
+    mobCard.setPositionSmooth(HitListConsts.positions[self.mobCount +1], false, fast)
+
+    if mobCard.is_face_down then
+        mobCard.flip()
+    end
+
+    mobCard.setLock(true)
+
+    self.mobCount = self.mobCount + 1
+
+    if self.mobCount >= 6 then
+        self.startMobWar()
+    end
+end
+
+function HitList:insertMobster(mobCard, fast, index)
+    if index > self.mobCount then
+        self.addMobster(mobCard, fast)
+        return
+    end
+
+    rightShiftList(self, index, 1)
+    self.hitList[index] = mobCard
+    self.mobCount = self.mobCount + 1
+
+    mobCard.setPositionSmooth(HitListConsts.positions[index], false, fast)
+    mobCard.setRotationSmooth(HitListConsts.listRotation, false, fast)
+
+    if mobCard.is_face_down then
+        mobCard.flip()
+    end
+
+    mobCard.setLock(true)
+
+    if self.mobCount > 6 then
+        self.startMobWar()
+    end
+end
+
+function HitList:removeMobsterByName(name, fast, dest, rotation)
+    for _,card in ipairs(self.hitList) do
+        if card.getDescription() == name then
+            return self.removeMobsterByIndex(_, fast, dest, rotation)
+        end
+    end
+    return nil
+end
+
+function HitList:removeMobster(mobCard, fast, dest, rotation)
+    local i = self.getIndex(mobCard)
+    if i ~= nil then
+        return removeMobsterByIndex(i, fast, dest, rotation)
+    end
+    return nil
+end
+
+function HitList:removeMobsterByIndex(index, fast, dest, rotation)
+    if index == 0 or index > self.mobCount then
+        return nil
+    end
+
+    local mobster = self.hitList[index]
+    mobster.setLock(false)
+
+    if dest ~= nil then
+        mobster.setPositionSmooth(dest, false, fast)
+    end
+
+    if rotation ~= nil then
+        mobster.setRotationSmooth(rotation, false, fast)
+    end
+
+    self.mobCount = self.mobCount - 1
+    if index < self.mobCount + 1 then
+        leftShiftList(self, index + 1, 1)
+    end
+
+    if self.mobCount == 0 then
+        stopMobWar()
+    end
+
+    return mobster
+end

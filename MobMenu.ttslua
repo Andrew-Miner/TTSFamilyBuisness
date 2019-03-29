@@ -1,0 +1,227 @@
+#include MobsterConstants
+
+MobMenu = {
+    maxWidth = 6,
+    maxHeigth = 3,
+    minWidth = 200,
+    minHeigth = 180,
+    waitForLoad = false,
+
+    callbacks = {},
+    playerSelections = {}
+}
+
+function MobMenu:rebuildMenu(mobNames)
+    local xmlTable = Global.UI.getXmlTable()
+    local panel = self:getPanel(xmlTable)
+    local scrollView = self:getScollView(panel)
+    scrollView.children[1].children = {}
+
+    print(scrollView)
+    print(xmlTable)
+
+    local mobCount = 0
+    for _,mob in ipairs(mobNames) do
+        self:addMobsterSV(card, scrollView)
+        mobCount = mobCount + 1
+    end
+
+    local width = self:calculateWidth(mobCount)
+    local width self:calculateHeigth(mobCount)
+    print('Width: ' .. tostring(width))
+    print('Heigth: ' .. tostring(heigth))
+    self:setHeigthP(heigth + 20, panel)
+    self:setWidthP(width, panel)
+
+    self.waitForLoad = true
+    Global.UI.setXmlTable(xmlTable)
+    self:clearSelection()
+end
+
+function MobMenu:addMobster(mobName)
+    local xmlTable = Global.UI.getXmlTable()
+    local panel = getPanel(xmlTable)
+    local scrollView = getScollView(panel)
+
+    self:addMobsterSV(mobName, scrollView)
+
+    local length = table.getn(scrollView.children[1].children)
+    self:setHiegthP(self:calculateWidth(length))
+    self:setWidthP(self:calculateHeigth(length))
+
+    self.waitForLoad = true
+    Global.UI.setXmlTable(xmlTable)
+end
+
+function MobMenu:addMobsterSV(mobName, scrollView)
+    local data = getMobsterDataByName(mobName)
+    local button = {
+        tag = 'Button',
+        attributes = {
+            class = 'mobButton'
+            onClick = 'MobMenu:onClick',
+            id = data.asset_name
+        },
+        children = {
+            {
+                tag = 'Image',
+                attributes = {
+                    class = 'mobImage',
+                    image = data.asset_name
+                }
+            }
+        }
+    }
+
+    if scrollView.children[1].children == nil then
+        scrollView.children[1].children = { button }
+    else
+        table.insert(scrollView.children[1].children, button)
+    end
+end
+
+function MobMenu:wait()
+    local temp = self.waitForLoad
+    self.waitForLoad = false
+    return temp
+end
+
+function MobMenu:show()
+    UI.show('mobSelection')
+end
+
+function MobMenu:hide()
+    UI.hide('mobSelection')
+end
+
+function MobMenu:calculateWidth(mobCount)
+    local width = self.maxWidth * 124
+    if mobCount < self.maxWidth then
+        width = mobCount * 124
+    end
+
+    if width < self.minWidth then
+        width = self.minWidth
+    end
+    return width
+end
+
+function MobMenu:calculateHeigth(mobCount)
+    local heigth = self.maxHeigth * 168
+    if math.ceil(mobCount / self.maxWidth) < self.maxHeigth then
+        heigth = math.ceil(mobCount / self.maxWidth) * 168
+    end
+
+    if heigth < self.minHeigth then
+        heigth = self.minHeigth
+    end
+    return heigth
+end
+
+-- ==================== Getter/Setters
+
+function MobMenu:setWidth(width)
+    local xmlTable = Global.UI.getXmlTable()
+    local panel = getPanel(xmlTable)
+
+    self:setWidthP(width, panel)
+
+    self.waitForLoad = true
+    Global.UI.setXmlTable(xmlTable)
+end
+
+function MobMenu:setWidthP(width, panel)
+    panel.attributes.width = width
+    panel.children[1].attributes.width = width
+    panel.children[1].children[1].attributes.width = width
+end
+
+function MobMenu:setHeigth(heigth)
+    local xmlTable = Global.UI.getXmlTable()
+    local panel = getPanel(xmlTable)
+
+    self:setHeigthP(width, panel)
+
+    self.waitForLoad = true
+    Global.UI.setXmlTable(xmlTable)
+end
+
+function MobMenu:setHeigthP(heigth, panel)
+    panel.attributes.height = heigth
+    panel.children[1].attributes.height = heigth - 25
+    panel.children[1].children[1].attributes.height = heigth - 25
+end
+
+function MobMenu:setVisibility(playerColor)
+    Global.UI.setAttribute('mobSelection', 'visibility', playerColor)
+end
+
+function MobMenu:getScrollView(panelTable)
+    for _,child in ipairs(panelTable.children) do
+        if child.tag == 'VerticalScrollView' and child.attributes.id == 'scrollSelection' then
+            return child
+        end
+    end
+    return nil
+end
+
+function MobMenu:getPanel(xmlTable)
+    for _,obj in ipairs(xmlTable) do
+        if obj.tag == 'Panel' and obj.attributes.id == 'mobSelection' then
+            return obj
+        end
+    end
+    return nil
+end
+
+function MobMenu:getSelection(playerColor)
+    if self.playerSelections == nil then
+        return nil
+    end
+    return self.playerSelections[playerColor]
+end
+
+function MobMenu:clearSelections()
+    self.playerSelections = {}
+end
+
+-- ============= Callback Functionality
+function MobMenu:registerCallback(callback)
+    if callback ~= nil then
+        table.insert(self.callbacks, callback)
+    end
+end
+
+function MobMenu:unregisterCallback(callback)
+    if callback ~= nil then
+        for _,cb in ipairs(self.callbacks) do
+            if cb == callback then
+                table.remove(self.callbacks, _)
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function MobMenu:clearCallbacks()
+    self.callbacks = {}
+end
+
+function MobMenu:onClick(player, idValue, _)
+    print('-------------')
+    print(idValue)
+    print(_)
+    self.playerSelections[player.color] = _
+    if callbacks ~= nil then
+        for i,cb in ipairs(callbacks) do
+            print("I:" .. tostring(i))
+            cb(player.color, _)
+        end
+    end
+end
+
+function MobMenu:onClose(player, idValue, _)
+    self.playerSelections[player.color] = 'close'
+    UI.hide('mobSelection')
+end

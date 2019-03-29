@@ -1,0 +1,102 @@
+#include Zones
+#include Utils
+
+Shuffler = {
+    drawZone = nil,
+    discardZone = nil,
+}
+
+function Shuffler:new()
+    setmetatable({}, Shuffler)
+    self:init()
+    return self
+end
+
+function Shuffer:init()
+    discardZone = getObjectFromGUID(DISCARD_ZN_GUID)
+    drawZone = getObjectFromGUID(DRAW_ZN_GUID)
+end
+
+function Shuffler:eObjectLeaveZone(zone, obj)
+    if zone == self.drawZone and self.drawTileEmpty() then
+        Wait.time(function() reshuffle() end, 1)
+    end
+end
+
+function Shuffler:eObjectDrop(colorName, obj)
+    if obj.tag ~= 'Card' then
+        return
+    end
+
+    if discardZone.getObjects() == nil then
+        return
+    end
+
+    for _,card in ipairs(self.discardZone.getObjects()) do
+        if card.getGUID() == obj.getGUID() then
+            if obj.is_face_down then
+                obj.flip()
+            end
+
+            obj.setPositionSmooth(discardPos, true, false)
+        end
+    end
+end
+
+function Shuffler:drawTileEmpty()
+    for _,card in ipairs(self.drawZone.getObjects()) do
+        if card.getGUID() ~= self.drawTile then
+            return false
+        end
+    end
+    return true
+end
+
+function Shuffler:getCards()
+    for _,card in ipairs(self.drawZone.getObjects()) do
+        if card.getGUID() ~= DRAW_TILE_GUID then
+            return card
+        end
+    end
+end
+
+function Shuffler:reshuffle()
+    local deck = nil
+    for _,obj in ipairs(self.discardZone.getObjects()) do
+        if obj.tag == 'Deck' then
+            deck = obj
+            break
+        end
+    end
+
+    if deck ~= nil then
+        deck.flip()
+        deck.setName('Cards')
+        deck.setPositionSmooth(CONSTANTS.drawPos, false, false)
+        Wait.time(function() deck.shuffle() end, 0.5)
+    end
+end
+
+function Shuffler:discardCard(card)
+    if card.is_face_down == true then
+        card.flip()
+    end
+
+    card.setRotationSmooth({0.00, 180.00, 0.00}, false, false)
+    card.setPositionSmooth(CONSTANTS.discardPosHigh, true, false)
+end
+
+function Shuffler:isDiscarded(discardCard)
+    for _,card in ipairs(self.discardZone.getObjects()) do
+        if card.getGUID() == discardCard.getGUID()) then
+            return true
+        elseif card.tag == 'Deck' then
+            for _,c in ipairs(card.getObjects()) do
+                if c.guid == discardCard.getGUID() then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end

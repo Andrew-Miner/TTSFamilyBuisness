@@ -1,0 +1,38 @@
+#include !/Cards/Card
+
+Intrigue = Card:new('Intrigue',
+                    'Rearrange order of the Hit List.',
+                    'Green', 2, false)
+
+function Intrigue:new()
+    setmetatable({}, Intrigue)
+    return self
+end
+
+function Intrigue:cardFunction(playerColor, closestColor)
+    if HitList:length() == 0 then
+        return 'deciding'
+    end
+
+    print('Params 2:' .. params[2])
+    UI.show('doneButton')
+    UI.setAttribute('doneButton', 'visibility', playerColor)
+    UI.setAttribute('doneButton', 'textColor', 'white')
+
+    local mobWar = HitList:isMobWar()
+    local killPerTurn = HitList:getKillAmount()
+    print('Mob War1: '..tostring(mobWar))
+
+    local mobs = {}
+    local length = HitList:length()
+    for i=length,1,-1 do
+        local card = HitList:getMobsterByIndex(i)
+        table.insert(mobs, card)
+    end
+
+    for _,m in ipairs(mobs) do
+        HitList:removeMobster(m, true, m.getPosition(), m.getRotation())
+    end
+
+    return 'organizing_list'
+end

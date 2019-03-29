@@ -1,0 +1,18 @@
+#include Contract
+
+ContractNoBlue = Contract:new('Contract (No Blue Cards)',
+                             'Place an opponent\'s mobster on the Hit List.',
+                             1, 'Contract', false)
+
+function ContractNoMob:new()
+    setmetatable({}, ContractNoMob)
+    return self
+end
+
+function Contract:cardFunction(playerColor, closestColor)
+    if playerList.call('getData', { closestColor }).mobCount >= 1 then
+        mob = playerList.call('removeMobCard', { closestColor })
+        hitList.call('addMobster', { mob, false })
+    end
+    return 'deciding'
+end

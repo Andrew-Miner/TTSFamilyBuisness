@@ -1,0 +1,128 @@
+#include PlayerObj
+
+PlayerList = {
+    activeColor = 'White'
+    players = {}
+    playerCount = 0
+}
+
+function PlayerList:new(activeColor, players, playerCount)
+    setmetatable({}, PlayerList)
+    self.activeColor = activeColor
+    self.players = players
+    self.playerCount = playerCount
+    return self
+end
+
+function PlayerList:setTurn(playerColor)
+    if self:containsColor(playerColor) then
+        self.activeColor = playerColor
+    end
+end
+
+function PlayerList:getWhosTurn()
+    return self.activeColor
+end
+
+function PlayerList:getPlayers()
+    return self.players
+end
+
+function PlayerList:size()
+    return self.playerCount
+end
+
+function PlayerList:clear()
+    self.players = {}
+    self.playerCount = 0
+end
+
+function PlayerList:containsColor(playerColor)
+    for _,player in ipairs(self.players) do
+        if player.color == playerColor then
+            return true
+        end
+    end
+    return false
+end
+
+function PlayerList:containsMob(mobName)
+    for _,player in ipairs(self.players) do
+        if player.mobName == mobName then
+            return true
+        end
+    end
+    return false
+end
+
+function PlayerList:addPlayer(playerColor, mobName)
+    if containsMob(mobName) or containsColor(playerColor) then
+        return nil
+    end
+    local newPlayer = PlayerObj:new(playerColor, mobName)
+    table.insert(self.players, newPlayer)
+    self.playerCount = self.playerCount + 1
+    return newPlayer
+end
+
+function PlayerList:addPlayerObj(playerObj)
+    if containsMob(playerObj.mobName) or containsColor(playerObj.color) then
+        return false
+    end
+    self.playerCount = self.playerCount + 1
+    table.insert(self.players, playerObj)
+    return true
+end
+
+function PlayerList:removePlayer(playerColor)
+    if self.playerCount == 0 then
+        return
+    end
+
+    local index = getPlayerIndex(playerColor)
+    if index == 0 then
+        return
+    end
+
+    table.remove(self.players, index)
+    self.playerCount = self.playerCount - 1
+end
+
+function PlayerList:removePlayerObj(playerObj)
+    self:removePlayer(playerObj.color)
+end
+
+function PlayerList:getPlayerIndex(playerColor)
+    for _,player in ipairs(self.players) do
+        if player.color == playerColor then
+            return _
+        end
+    end
+    return 0
+end
+
+function PlayerList:getPlayer(playerColor)
+    for _,player in ipairs(self.players) do
+        if player.color == playerColor then
+            return player
+        end
+    end
+    return nil
+end
+
+function PlayerList:getMobsters()
+    local mobs = {}
+    for _,player in ipairs(self.players) do
+        mobs[player.color] = player.mobName
+    end
+    return mobs
+end
+
+function PlayerList:getPlayerByMob(mobName)
+    for _,player in ipairs(self.players) do
+        if player.mobName == mobName then
+            return player
+        end
+    end
+    return nil
+end

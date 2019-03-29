@@ -1,0 +1,24 @@
+#include !/Cards/Card
+
+FedCrack = Card:new('Federal CrackDown',
+                    'Return all the mobsters on the Hit List to their players.',
+                    'Green', 1, false)
+
+function FedCrack:new()
+    setmetatable({}, FedCrack)
+    return self
+end
+
+function FedCrack:cardFunction(playerColor, closestColor)
+    local length = HitList:length()
+    for i=1,length,1 do
+        Wait.time(function()
+            local updatedLength = HitList:length()
+            local mob = HitList:getMobsterByIndex(updatedLength)
+            HitList:removeMobsterByIndex(updatedLength, true, mob.getPosition(), {0.00, 180.00, 0.00})
+            local player = PlayerList:getPlayerByMob(mob.getName())
+            player:addMobCard(mob)
+        end, 0.3*(i-1))
+    end
+    return 'deciding'
+end

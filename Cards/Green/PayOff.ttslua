@@ -1,0 +1,28 @@
+#include !/Cards/Card
+
+PayOff = Card:new('Pay Off',
+                  'Return all of 1 player\'s mobsters from the Hit List.',
+                  'Green', 1, true, true, 'Pay Off', false)
+
+function PayOff:new()
+    setmetatable({}, PayOff)
+    return self
+end
+
+-- TODO: check if leftShift from removeMobsterByIndex interferes width
+--       remove card
+function PayOff:cardFunction(playerColor, closestColor)
+    local length = HitList:length()
+    for i=length,1,-1 do
+        Wait.time(function()
+            local mob = HitList:getMobsterByIndex(i)
+            local player = PlayerList:getPlayerByMob(mob.getName())
+
+            if closestColor == player.color then
+                HitList:removeMobsterByIndex(length, true, nil, nil)
+                player:addMobCard(mob)
+            end
+        end, 0.02*(length-i))
+    end
+    return 'deciding'
+end
