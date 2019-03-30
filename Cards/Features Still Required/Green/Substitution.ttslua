@@ -1,8 +1,8 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 Substitution = Card:new('Substitution',
                         'Replace 1 mobster on the Hit List with any 1 mobster in play.',
-                        'Green', 2, true. true, 'Substitute', false)
+                        'Green', 2, true, true, 'Substitute', false)
 
 function Substitution:new()
     setmetatable({}, Substitution)

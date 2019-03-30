@@ -1,11 +1,11 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 DoubleCross = Card:new('Double Cross',
                        'Place 1 mobsters from all opponents on the Hit List.',
                        'Red', 1, false)
 
 function DoubleCross:new()
-    setmetatable({}, DoubleCross)
+    local self = setmetatable({}, DoubleCross)
     return self
 end
 

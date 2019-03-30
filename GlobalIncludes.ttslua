@@ -1,9 +1,22 @@
+
+#include !/Zones
+#include !/Utils
+#include !/Player/PlayerList
+#include !/MobMenu
+#include !/Scheduler
+#include !/HitList/HitListUtils
+#include !/HitList/HitList
+#include !/Shuffler
+
+#include !/Cards/Card
+
 #include !/Cards/Features Still Required/Red/Contracts/Contract
 #include !/Cards/Red/Contracts/ContractNoBlue
 #include !/Cards/Features Still Required/Red/Contracts/ContractNoFam
 #include !/Cards/Features Still Required/Red/Contracts/ContractNoMob
 #include !/Cards/Features Still Required/Red/Contracts/DoubleContract
 #include !/Cards/Features Still Required/Red/Contracts/PriorityContract
+
 #include !/Cards/Features Still Required/Red/DoubleCross
 #include !/Cards/Features Still Required/Red/Turncoat
 #include !/Cards/Features Still Required/Red/Vendetta
@@ -22,7 +35,7 @@
 
 #include !/Cards/Blue/BlueCards
 
-cardObjs = {
+CARD_OBJS = {
     ['Contract'] = Contract,
     ['Priority Contract'] = PriorityContract,
     ['Double Contract'] = DoubleContract,
@@ -41,7 +54,7 @@ cardObjs = {
     ['Family Influence'] = FamilyInfluence,
     ['Finger'] = Finger,
     ['Safe House'] = SafeHouse,
-    ['Pay Off'] = PayOff
+    ['Pay Off'] = PayOff,
     ['Federal CrackDown'] = FedCrack,
     ['Intrigue'] = Intrigue,
     ['Police Protection'] = PoliceProtection,

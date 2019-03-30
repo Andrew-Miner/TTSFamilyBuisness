@@ -1,0 +1,62 @@
+#include !/GlobalIncludes
+
+GameManager = {
+    scriptsEnabled = true,
+    inGame = false,
+    gameSetup = false,
+    setupDeck = nil
+}
+
+function GameManager:isInGame()
+    return self.inGame
+end
+
+function GameManager:isSetup()
+    return self.gameSetup
+end
+
+function GameManager:enable()
+    self.scriptsEnabled = true
+end
+
+function GameManager:disable()
+    self.scriptsEnabled = false
+end
+
+function GameManager:isEnabled()
+    return self.scriptsEnabled
+end
+
+function GameManager:setupGame()
+    if self.inGame then
+        self:endGame()
+    end
+
+    clearTable()
+    HitList:reset()
+
+    spawnCards()
+    if self.scriptsEnabled then
+        Wait.time(function()
+            self.setupDeck = Shuffler:getCards()
+            print(self.setupDeck)
+            self.setupDeck.interactable = false
+        end, 1)
+    end
+
+    buildPlayerObjs()
+    distributeMobs()
+
+    self.gameSetup = true
+end
+
+function GameManager:startGame()
+    if not self.gameSetup then
+        print('Error: Setup the game first!')
+    end
+    self.inGame = true
+end
+
+function GameManager:endGame()
+    self.inGame = false
+end

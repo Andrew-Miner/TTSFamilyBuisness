@@ -1,5 +1,5 @@
-#include !/Cards/Card
-#include !/Scheduler
+--#include !/Cards/Card
+--#include !/Scheduler
 
 Vendetta = Card:new('Vendetta',
                     'Place 2 mobsters from all opponents on the Hit List. Start a Mob War.',

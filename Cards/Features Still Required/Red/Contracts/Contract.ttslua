@@ -1,18 +1,18 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 Contract = Card:new('Contract',
                     'Place an opponent\'s mobster on the Hit List.',
-                    'Red', 12, true, false, 'Contract', true
+                    'Red', 12, true, false, 'Contract', true,
                     {'Family Influence', 'Mob Power'})
 
 function Contract:new(name, description, count, targetLabel, waitForResponse, responses)
-        setmetatable({}, Contract)
+        local self = setmetatable({}, Contract)
 
         self.name = name
         self.description = description
         self.count = count
         self.targetLabel = targetLabel
-        self.waitForResponse = waitForResposne,
+        self.waitForResponse = waitForResposne
         self.responses = responses
 
         return self

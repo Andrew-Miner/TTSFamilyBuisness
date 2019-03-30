@@ -1,29 +1,37 @@
-#include Zones
-#include Utils
+--#include Zones
+--#include Utils
 
 Shuffler = {
     drawZone = nil,
-    discardZone = nil,
+    discardZone = nil
 }
 
 function Shuffler:new()
-    setmetatable({}, Shuffler)
+    local self = setmetatable({}, Shuffler)
     self:init()
     return self
 end
 
-function Shuffer:init()
-    discardZone = getObjectFromGUID(DISCARD_ZN_GUID)
-    drawZone = getObjectFromGUID(DRAW_ZN_GUID)
+function Shuffler:init()
+    self.drawZone = getObjectFromGUID(DRAW_ZN_GUID)
+    self.discardZone = getObjectFromGUID(DISCARD_ZN_GUID)
 end
 
 function Shuffler:eObjectLeaveZone(zone, obj)
-    if zone == self.drawZone and self.drawTileEmpty() then
+    if self.drawZone == nil then
+        self:init()
+    end
+
+    if zone == self.drawZone and self:drawTileEmpty() then
         Wait.time(function() reshuffle() end, 1)
     end
 end
 
 function Shuffler:eObjectDrop(colorName, obj)
+    if self.discardZone == nil then
+        self:init()
+    end
+
     if obj.tag ~= 'Card' then
         return
     end
@@ -44,8 +52,12 @@ function Shuffler:eObjectDrop(colorName, obj)
 end
 
 function Shuffler:drawTileEmpty()
+    if self.discardZone == nil then
+        self:init()
+    end
+
     for _,card in ipairs(self.drawZone.getObjects()) do
-        if card.getGUID() ~= self.drawTile then
+        if card.tag == 'Card' or card.tag == 'Deck' then
             return false
         end
     end
@@ -53,14 +65,25 @@ function Shuffler:drawTileEmpty()
 end
 
 function Shuffler:getCards()
+    if self.drawZone == nil then
+        self:init()
+    end
+
+    print(#self.drawZone.getObjects())
+
     for _,card in ipairs(self.drawZone.getObjects()) do
-        if card.getGUID() ~= DRAW_TILE_GUID then
+        if card.tag == 'Card' or card.tag == 'Deck' then
             return card
         end
     end
+    return nil
 end
 
 function Shuffler:reshuffle()
+    if self.discardZone == nil then
+        self:init()
+    end
+
     local deck = nil
     for _,obj in ipairs(self.discardZone.getObjects()) do
         if obj.tag == 'Deck' then
@@ -87,8 +110,12 @@ function Shuffler:discardCard(card)
 end
 
 function Shuffler:isDiscarded(discardCard)
+    if self.discardZone == nil then
+        self:init()
+    end
+
     for _,card in ipairs(self.discardZone.getObjects()) do
-        if card.getGUID() == discardCard.getGUID()) then
+        if card.getGUID() == discardCard.getGUID() then
             return true
         elseif card.tag == 'Deck' then
             for _,c in ipairs(card.getObjects()) do

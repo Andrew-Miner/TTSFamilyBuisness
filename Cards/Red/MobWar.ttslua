@@ -1,9 +1,9 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 MobWar = Card:new('Mob War', 'Start a Mob War.', 'Red', 1, false)
 
 function MobWar:new()
-    setmetatable({}, MobWar)
+    local self = setmetatable({}, MobWar)
     return self
 end
 

@@ -1,11 +1,11 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 Hit = Card:new('Hit',
                'Execute any mobster. Place 1 of your mobsters on the Hit List.',
                'Red', 1, true, true, 'Hit', false)
 
 function Hit:new()
-    setmetatable({}, Hit)
+    local self = setmetatable({}, Hit)
     return self
 end
 

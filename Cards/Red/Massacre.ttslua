@@ -1,19 +1,18 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 Massacre = Card:new('ST. Valentine\'s Day Massacre',
                     'Execute all mobsters on the Hit List.',
                     'Red', 1, false)
 
 function Massacre:new()
-    setmetatable({}, Hit)
+    local self = setmetatable({}, Hit)
     return self
 end
 
 function Massacre:cardFunction(playerColor, closestColor)
     local length = HitList:length() / HitList:getKillAmount()
-        Wait.time(function()
-            HitList:discardMobster(1, true)
-        end, 0.4*(i-1))
-    end
+    Wait.time(function()
+        HitList:discardMobster(1, true)
+    end, 0.4*(i-1))
     return 'deciding'
 end

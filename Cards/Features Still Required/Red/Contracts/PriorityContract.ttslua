@@ -1,4 +1,4 @@
-#include Contract
+--#include Contract
 
 PriorityContract = Contract:new('Priority Contract',
                                 'Place an opponent\'s mobster first on the Hit List.',
@@ -6,7 +6,7 @@ PriorityContract = Contract:new('Priority Contract',
                                 {'Family Influence', 'Mob Power'})
 
 function PriorityContract:new()
-    setmetatable({}, PriorityContract)
+    local self = setmetatable({}, PriorityContract)
     return self
 end
 

@@ -1,8 +1,3 @@
-#include Zones
-#include Player/PlayerList
-#include MobsterConstants
-#include Cards/CardData
-
 CONSTANTS = {
     discardPosHigh = {-13.31, 3.1, -0.03},
     discardPos = {-13.31, 1.1, -0.03},
@@ -21,17 +16,16 @@ function contains(list, object)
 end
 
 function tableLength(T)
-  local count = 0
-  for _ in pairs(T) do count = count + 1 end
-  return count
+    local count = 0
+    for _ in pairs(T) do count = count + 1 end
+    return count
 end
 
 function clearTable()
     local table = getAllObjects()
     for key,value in pairs(table) do
         if value.getGUID() != self.getGUID() then
-            if value.tag ~= 'Scripting' and value.tag ~= 'Tile' and value.tag ~= 'Clock' then
-                print(value.tag)
+            if value.tag ~= 'Scripting' and value.tag ~= 'Tile' and value.tag ~= 'Clock' and value.tag ~= 'Checker' then
                 destroyObject(value)
             end
         end
@@ -75,7 +69,7 @@ function cardSpawnCallback(cards)
 
     for i,card in ipairs(cards.getObjects()) do
         local pos = i
-        for _,cObj in pairs(cardObjs) do
+        for _,cObj in pairs(CARD_OBJS) do
             if pos <= cObj.count then
                 local obj = cards.takeObject({
                     index = 0,
@@ -199,20 +193,44 @@ end
 
 function distributeMobDeck(playerColor, mobDeck)
     local pos = Player[playerColor].getHandTransform().position
-    local player = PlayerList.getPlayer(playerColor)
-    for i,pos in pairs(_G['c' .. player.color].positions) do
+    local player = PlayerList:getPlayer(playerColor)
+    local colorData = _G['c' .. player.color]
+
+    for i,pos in ipairs(colorData.positions) do
         local obj = mobDeck.takeObject({
             position = pos,
             smooth = false,
-            rotation = data.rotation,
+            rotation = colorData.rotation,
 
             callback_function = function(obj)
                 obj.use_snap_points = true
-                print(getMobsterDataByIndex(mobDeck.getName(), i).name)
                 obj.setName(mobDeck.getName())
                 obj.setDescription(getMobsterDataByIndex(mobDeck.getName(), i).name)
                 player:addMobCard(obj)
             end
         })
     end
+end
+
+--Checks if a color is promoted or host
+function permissionCheck(color)
+    if Player[color].host==true or Player[color].promoted==true then
+        return true
+    else
+        return false
+    end
+end
+
+--obj.call('CallWithParams', { name = 'someFunction', params = {1, 2, 3} })
+function callWithParams(args)
+    local tbl = args.params
+    local fcn = assert(_G[args.name], 'No function named ' .. args.name)
+    return fcn(unpack(tbl))
+end
+
+function callObjWithParams(args)
+    local tbl = args.params
+    local obj = assert(_G[args.objName], 'No object named ' .. args.objName)
+    local fcn = assert(obj[args.functionName], 'Function ' .. args.functionName .. ' not found in ' .. args.objName .. ' object')
+    return fcn(obj, unpack(tbl))
 end

@@ -5,7 +5,7 @@ ColorData = {
 }
 
 function ColorData:new(zone, rotation, positions)
-    setmetatable({}, ColorData)
+    local self = setmetatable({}, ColorData)
     self.zone = zone
     self.rotation = rotation
     self.positions = positions

@@ -1,4 +1,4 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 MobPower = Card:new('Mob Power',
                     'Reverse effect of any 1 Contract (place 1 of contractor\'s mobsters on the Hit List).',
@@ -10,4 +10,3 @@ FamilyInfluence = Card:new('Family Influence',
 
 Finger = Card:new('Finger', 'Cancel 1 Take it on the Lam.', 'Blue', 2, false)
 SafeHouse = Card:new('Safe House', 'Cancels 1 Vendetta.', 'Blue', 1, false)
-                  

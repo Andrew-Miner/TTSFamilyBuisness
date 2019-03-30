@@ -58,7 +58,7 @@ function MobMenu:addMobsterSV(mobName, scrollView)
     local button = {
         tag = 'Button',
         attributes = {
-            class = 'mobButton'
+            class = 'mobButton',
             onClick = 'MobMenu:onClick',
             id = data.asset_name
         },

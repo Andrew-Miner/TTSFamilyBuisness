@@ -1,4 +1,4 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 PoliceProtection = Card:new('Police Protection',
                             'Remove any 1 mobster from the Hit List.',

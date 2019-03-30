@@ -1,11 +1,11 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 Truce = Card:new('Truce',
                  'Stop a Mob War',
                  'Green', 1, false)
 
 function Truce:new()
-    setmetatable({}, Truce)
+    local self = setmetatable({}, Truce)
     return self
 end
 

@@ -1,5 +1,5 @@
-#include !/Utils
-#include !/MobsterConstants
+--#include !/Utils
+--#include !/MobsterConstants
 
 HitListConsts = {
     listRotation = {0.00, 180.00, 0.00},

@@ -1,4 +1,4 @@
-#include Contract
+--#include Contract
 
 DoubleContract = Contract:new('Double Contract',
                               'Place 2 of any one opponent\'s mobsters on the Hit List.',
@@ -6,7 +6,7 @@ DoubleContract = Contract:new('Double Contract',
                               {'Family Influence', 'Mob Power'})
 
 function DoubleContract:new()
-    setmetatable({}, DoubleContract)
+    local self = setmetatable({}, DoubleContract)
     return self
 end
 

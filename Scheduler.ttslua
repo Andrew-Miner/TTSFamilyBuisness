@@ -1,6 +1,6 @@
  Scheduler = {
-     schedule = {}
-     lastFrame = 0
+     schedule = {},
+     lastFrame = 0,
      nextFrameCBs = nil
  }
 
@@ -12,7 +12,7 @@
  }
 
 function ScheduledCallback:new(callbackList, delaySeconds, repeatSeconds, repeatTimes)
-    setmetatable({}, ScheduledCallback)
+    local self = setmetatable({}, ScheduledCallback)
     self.fixedCallTime = Time.fixed_time + delay
     self.repeatSec = repeatSeconds
     self.repeatTimes = repeatTimes
@@ -50,7 +50,7 @@ end
 
 function Scheduler:scheduleFrame()
     local time = Time.fixed_time
-    for i=#self.schedule,1,-1 d
+    for i=#self.schedule,1,-1 do
         if time >= self.schedule[i].fixedCallTime then
             self:addCBList(self.schedule[i])
             if self.schedule[i].repeatSec == nil or self.schedule[i].repeatTimes == 0 then

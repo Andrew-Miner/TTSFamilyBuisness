@@ -1,6 +1,6 @@
-#include HitListUtils
-#include !/Zones
-#include !/Player/PlayerList
+--#include HitListUtils
+--#include !/Zones
+--#include !/Player/PlayerList
 
 
 HitList = {
@@ -30,7 +30,7 @@ function HitList:init()
 end
 
 function HitList:startMobWar(killPerTurn)
-    if self.mobCount = 0 then
+    if self.mobCount == 0 then
         return false
     end
 
@@ -52,7 +52,7 @@ end
 
 function HitList:reset()
     self.mobCount = 0
-    self.stopMobWar()
+    self:stopMobWar()
 end
 
 function HitList:length()
@@ -68,7 +68,7 @@ function HitList:getKillAmount()
 end
 
 function HitList:contains(mobCard)
-    if self.getIndex(mobCard) ~= nil then
+    if self:getIndex(mobCard) ~= nil then
         return true
     end
     return false
@@ -84,12 +84,12 @@ end
 
 function HitList:getDeadPile()
     if self.deadZone == nil then
-        self.init()
+        self:init()
     end
 
     local objs = self.deadZone.getObjects()
     if objs ~= nil then
-        for_,obj in ipairs(objs) do
+        for _,obj in ipairs(objs) do
             if obj.tag =='Deck' or obj.tag == 'Card' then
                 return obj
             end
@@ -128,14 +128,14 @@ end
 
 function HitList:processDraw()
     if self.mobCount == 0 then
-        self.stopMobWar()
+        self:stopMobWar()
         return
     end
 
     for i=1,self.killPerTurn,1 do
         Wait.time(function()
             if self.mobCount > 0 then
-                self.discardMobster(1, true)
+                self:discardMobster(1, true)
             end
         end, 0.5*(i-1))
     end
@@ -147,8 +147,8 @@ function HitList:discardMobster(index, fast)
         return nil
     end
 
-    local deadPile = getDeadPile()
-    local mobster = removeMobsterByIndex(index, HitListConsts.deadPos,
+    local deadPile = self:getDeadPile()
+    local mobster = self:removeMobsterByIndex(index, HitListConsts.deadPos,
                                          HitListConsts.listRotation, fast)
 
     if deadPile ~= nil then
@@ -165,12 +165,12 @@ function HitList:discardMobster(index, fast)
 end
 
 function HitList:discardMobster(mobCard, fast)
-    local deadPile = getDeadPile()
+    local deadPile = self:getDeadPile()
 
     if deadPile ~= nil then
         deadPile.putObject(mobCard)
     else
-        if ~mobCard.is_face_down then
+        if not mobCard.is_face_down then
             mobCard.flip()
         end
         mobCard.setPositionSmooth(HitListConsts.deadPos, false, fast)
@@ -194,13 +194,13 @@ function HitList:addMobster(mobCard, fast)
     self.mobCount = self.mobCount + 1
 
     if self.mobCount >= 6 then
-        self.startMobWar()
+        self:startMobWar()
     end
 end
 
 function HitList:insertMobster(mobCard, fast, index)
     if index > self.mobCount then
-        self.addMobster(mobCard, fast)
+        self:addMobster(mobCard, fast)
         return
     end
 
@@ -218,23 +218,23 @@ function HitList:insertMobster(mobCard, fast, index)
     mobCard.setLock(true)
 
     if self.mobCount > 6 then
-        self.startMobWar()
+        self:startMobWar()
     end
 end
 
 function HitList:removeMobsterByName(name, fast, dest, rotation)
     for _,card in ipairs(self.hitList) do
         if card.getDescription() == name then
-            return self.removeMobsterByIndex(_, fast, dest, rotation)
+            return self:removeMobsterByIndex(_, fast, dest, rotation)
         end
     end
     return nil
 end
 
 function HitList:removeMobster(mobCard, fast, dest, rotation)
-    local i = self.getIndex(mobCard)
+    local i = self:getIndex(mobCard)
     if i ~= nil then
-        return removeMobsterByIndex(i, fast, dest, rotation)
+        return self:removeMobsterByIndex(i, fast, dest, rotation)
     end
     return nil
 end
@@ -261,7 +261,7 @@ function HitList:removeMobsterByIndex(index, fast, dest, rotation)
     end
 
     if self.mobCount == 0 then
-        stopMobWar()
+        self:stopMobWar()
     end
 
     return mobster

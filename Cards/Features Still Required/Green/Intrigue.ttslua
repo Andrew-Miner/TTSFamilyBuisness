@@ -1,4 +1,4 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 Intrigue = Card:new('Intrigue',
                     'Rearrange order of the Hit List.',

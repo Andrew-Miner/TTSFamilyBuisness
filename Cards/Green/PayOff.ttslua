@@ -1,11 +1,11 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 PayOff = Card:new('Pay Off',
                   'Return all of 1 player\'s mobsters from the Hit List.',
                   'Green', 1, true, true, 'Pay Off', false)
 
 function PayOff:new()
-    setmetatable({}, PayOff)
+    local self = setmetatable({}, PayOff)
     return self
 end
 

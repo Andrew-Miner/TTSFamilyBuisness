@@ -1,12 +1,12 @@
-#include !/Cards/Card
-#include !/MobMenu
+--#include !/Cards/Card
+--#include !/MobMenu
 
 Turncoat = Card:new('Turncoat',
                     'Switch 1 discarded mobster (of player with least) with 1 in play (of player with most).',
                     'Red', 1, true, true, 'Kill Mobster', false)
 
 function Turncoat:new()
-    setmetatable({}, Hit)
+    local self = setmetatable({}, Hit)
     return self
 end
 
@@ -38,10 +38,9 @@ function Turncoat:cardFunction(playerColor, closestColor)
     end
 
     if deadPile == nil then
-            return 'deciding'
-        end
-        return 'mobster_menu'
+        return 'deciding'
     end
+    return 'mobster_menu'
 end
 
 function Turncoat:responseScript(playerColor, defender, selection)

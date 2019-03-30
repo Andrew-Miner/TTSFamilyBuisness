@@ -1,8 +1,8 @@
 #include PlayerObj
 
 PlayerList = {
-    activeColor = 'White'
-    players = {}
+    activeColor = 'White',
+    players = {},
     playerCount = 0
 }
 
@@ -56,7 +56,7 @@ function PlayerList:containsMob(mobName)
 end
 
 function PlayerList:addPlayer(playerColor, mobName)
-    if containsMob(mobName) or containsColor(playerColor) then
+    if self:containsMob(mobName) or self:containsColor(playerColor) then
         return nil
     end
     local newPlayer = PlayerObj:new(playerColor, mobName)
@@ -66,7 +66,7 @@ function PlayerList:addPlayer(playerColor, mobName)
 end
 
 function PlayerList:addPlayerObj(playerObj)
-    if containsMob(playerObj.mobName) or containsColor(playerObj.color) then
+    if self:containsMob(playerObj.mobName) or self:containsColor(playerObj.color) then
         return false
     end
     self.playerCount = self.playerCount + 1

@@ -1,4 +1,4 @@
-#include Contract
+--#include Contract
 
 ContractNoFam = Contract:new('Contract (No Family Influence)',
                              'Place an opponent\'s mobster on the Hit List.',
@@ -6,7 +6,7 @@ ContractNoFam = Contract:new('Contract (No Family Influence)',
                              {'Mob Power'})
 
 function ContractNoFam:new()
-    setmetatable({}, ContractNoFam)
+    local self = setmetatable({}, ContractNoFam)
     return self
 end
 

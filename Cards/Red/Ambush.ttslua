@@ -1,9 +1,9 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 Ambush = Card:new('Ambush', 'Start a Mob War (2 executed each turn).', 'Red', 1, false)
 
 function Ambush:new()
-    setmetatable({}, MobWar)
+    local self = setmetatable({}, MobWar)
     return self
 end
 

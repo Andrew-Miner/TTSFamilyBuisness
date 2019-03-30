@@ -54,9 +54,6 @@ function getMobsterDataByAssetName(assetName)
     for _,mob in pairs(MOB_DATA) do
         for name,data in pairs(mob.card_data) do
             if data.asset_name == assetName then
-                print(assetName)
-                print(data.asset_name)
-                print(data.name)
                 return data
             end
         end

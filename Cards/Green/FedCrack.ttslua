@@ -1,11 +1,11 @@
-#include !/Cards/Card
+--#include !/Cards/Card
 
 FedCrack = Card:new('Federal CrackDown',
                     'Return all the mobsters on the Hit List to their players.',
                     'Green', 1, false)
 
 function FedCrack:new()
-    setmetatable({}, FedCrack)
+    local self = setmetatable({}, FedCrack)
     return self
 end
 
