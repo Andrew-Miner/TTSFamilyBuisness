@@ -25,6 +25,15 @@ function contains(list, object, func)
     return false
 end
 
+function getPColorByName(playerName)
+    return contains(Player.getPlayers(), playerName,
+    function(obj1, obj2)
+        if obj1 == obj2.steam_name then
+            return obj2.color
+        end
+    end)
+end
+
 function tableLength(T)
     local count = 0
     for _ in pairs(T) do count = count + 1 end

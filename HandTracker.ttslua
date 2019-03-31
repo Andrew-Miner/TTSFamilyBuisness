@@ -1,0 +1,46 @@
+HandTracker = {
+    holding = {
+    }
+}
+
+holdItem = {
+    card = nil,
+    type = nil,
+    cardObj = nil
+}
+
+MOB_TYPE = 1
+CARD_TYPE = 2
+
+function HandTracker:getHolding(playerColor)
+    return self.holding[playerColor]
+end
+
+function HandTracker:clear()
+    self.holding = {}
+end
+
+function HandTracker:pickUpEvent(playerColor, object)
+    print('in')
+    self.holding[playerColor] = nil
+    print('reset')
+    if object.tag == 'Card' then
+        print('set')
+        self.holding[playerColor] = {card = object, owned = false}
+        if CARD_OBJS[object.getName()] ~= nil then
+            print('found')
+            self.holding[playerColor].type = CARD_TYPE
+            self.holding[playerColor].cardObj = CARD_OBJS[object.getName()]
+            if contains(Player[playerColor].getHandObjects(), object) then
+                self.holding[playerColor].owned = true
+            end
+        elseif getMobsterData(object) ~= nil then
+            self.holding[playerColor].type = MOB_TYPE
+        end
+    end
+    return self.holding[playerColor]
+end
+
+function HandTracker:dropEvent(playerColor, object)
+    self.holding[playerColor] = nil
+end

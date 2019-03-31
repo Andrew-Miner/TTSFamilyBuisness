@@ -1,4 +1,4 @@
-#include MobsterConstants
+#include !/MobsterConstants
 
 MobMenu = {
     maxWidth = 6,

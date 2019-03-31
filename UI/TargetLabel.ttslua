@@ -39,15 +39,16 @@ function TargetLabel:setVisibility(colors)
 end
 
 function TargetLabel:updateTarget(gameState)
-    if gameState.card == nil then
+    if gameState.attackerData.card == nil then
         return
     end
 
-    closestPlayer = getClosestPlayer(gameState.card, PlayerList:getPlayers(), gameState.cardObj.targetSelf)
+    closestPlayer = getClosestPlayer(gameState.attackerData.card,
+    PlayerList:getPlayers(), gameState.attackerData.cardObj.targetSelf)
     if closestPlayer ~= nil then
         UI.setAttribute("targetName", "text", Player[closestPlayer.color].steam_name)
         UI.setAttribute("targetName", "color", closestPlayer.color)
-        UI.setAttribute("targetLabel", "text", gameState.cardObj.targetLabel .. ': ')
-        UI.setAttribute("targetLabel", "color", gameState.cardObj.type)
+        UI.setAttribute("targetLabel", "text", gameState.attackerData.cardObj.targetLabel .. ': ')
+        UI.setAttribute("targetLabel", "color", gameState.attackerData.cardObj.type)
     end
 end

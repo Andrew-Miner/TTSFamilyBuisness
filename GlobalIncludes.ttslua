@@ -2,12 +2,13 @@
 #include !/Zones
 #include !/Utils
 #include !/Player/PlayerList
-#include !/MobMenu
 #include !/Scheduler
 #include !/HitList/HitListUtils
 #include !/HitList/HitList
 #include !/Shuffler
 #include !/UI/TargetLabel
+#include !/UI/MobMenu
+#include !/HandTracker
 
 #include !/Cards/Card
 

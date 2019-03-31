@@ -28,7 +28,7 @@ function Card:new(name, description, type, count, hasTarget, targetSelf, targetL
     return self
 end
 
-function Card:cardFunction(playerColor, closestColor)
+function Card:useScript(gameState, playerColor)
 
 end
 
@@ -44,14 +44,14 @@ function Card:isValidDrop(gameState, playerColor, object)
     return true
 end
 
-function Card:dropEvent(gameState, playerColor, object, wasValid)
-    
-end
-
-function Card:updateEvent(params)
+function Card:dropEvent(gameState, playerColor, object)
 
 end
 
-function Card:responseScript(playerColor, responderColor, responseCard)
+function Card:updateEvent(gameState, playerColor, responderColor)
+
+end
+
+function Card:responseScript(gameState, playerColor)
 
 end

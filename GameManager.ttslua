@@ -2,21 +2,30 @@
 
 GameState = {
     id = 0,
-    card = nil,
-    cardObj = nil,
+    attackerData = nil,
+    responder = nil,
+    anyResponse = nil,
+    responderData = nil
 }
 
-function GameState:new(id, card, cardObj)
+-- TODO: MUST CONFIRM REPSONSE CARD IS DRAWN FROM HAND FUCK!!!!
+
+function GameState:new(id, attackerData, anyResponce, responder, responderData)
     local self = setmetatable({}, GameState)
+
     self.id = id
-    self.card = card
-    self.cardObj = cardObj
+    self.attackerData = attackerData
+    self.anyResponse = anyResponse
+    self.responder = responder
+    self.responderData = responderData
+
     return self
 end
 
 DECIDING_STATE = 1
 ATTACK_STATE = 2
 DEFEND_STATE = 3
+WIN_STATE = 4
 
 GameManager = {
     scriptsEnabled = true,
@@ -78,11 +87,7 @@ function GameManager:setupGame()
     distributeMobs()
     -- TODO: NOT HITLIST BUT PLAYER OBJ DATA
     if self.scriptsEnabled then
-        Global.call('callObjWithParams', {
-            objName = 'HitList',
-            functionName = 'setLock',
-            params = {true}
-        })
+        --HitList:setLock(true)
 
         Wait.time(function()
             self.setupDeck = Shuffler:getCards()
@@ -93,11 +98,7 @@ function GameManager:setupGame()
         self.gameSetup = true
         self.gameState = GameState:new(DECIDING_STATE)
     else
-        Global.call('callObjWithParams', {
-            objName = 'HitList',
-            functionName = 'setLock',
-            params = {false}
-        })
+        --HitList:setLock(false)
 
         self.gameSetup = false
     end
@@ -124,11 +125,8 @@ function GameManager:startGame()
     end
 
     dealCards()
-    print('dealt?')
     local random = PlayerList:getPlayers()[math.random(PlayerList:size())]
-    print('random found')
     PlayerList:setTurn(random.color)
-    print('turn set')
     printToAll(Player[PlayerList:getWhosTurn()].steam_name .. ' goes first!', 'Green')
 
     self.setupDeck.interactable = true
@@ -143,61 +141,106 @@ function GameManager:endGame()
     self:hideUI()
 end
 
+function GameManager:nextTurn(playerColor)
+    local next = playerColor
+    if next == nil then
+        next = getLeftOf(PlayerList:getWhosTurn())
+    end
+    print(next)
+    --if next == PlayerList:getWhosTurn() then
+        --setWinnerState(PlayerList:getWhosTurn())
+    --else
+        self.gameState = GameState:new(DECIDING_STATE)
+        PlayerList:setTurn(next)
+        printToAll(Player[next].steam_name .. '\'s turn!', 'Green')
+    --end
+
+    -- TODO: discard cards
+end
+
 function GameManager:onUpdate()
     if not self.inGame or not self.scriptsEnabled then
         return
     end
 
-    if self.gameState.id == DECIDING_STATE then
-        if self.gameState.cardObj ~= nil and self.gameState.cardObj.hasTarget then
-            TargetLabel:updateTarget(self.gameState)
-        end
+    if self.gameState.card ~= nil then
+        self.gameState.cardObj:updateEvent(self.gameState, PlayerList:getWhosTurn())
     end
 end
 
 function GameManager:onPickUp(playerColor, object)
-    if not self.inGame or not self.scriptsEnabled or
-        playerColor ~= PlayerList:getWhosTurn() or
-        object.tag ~= 'Card' then
+    if not self.inGame or not self.scriptsEnabled then
         return
     end
 
-    -- Checks if the object is in the players hand
-    if contains(Player[playerColor].getHandObjects(), object) then
-        local cardObj = CARD_OBJS[object.getName()]
-        if cardObj == nil then
+    local holdData = HandTracker:pickUpEvent(playerColor, object)
+
+    if self.gameState.id == DECIDING_STATE then
+        if playerColor ~= PlayerList:getWhosTurn() or
+        holdData.type ~= CARD_TYPE or holdData.owned ~= true then
             return
         end
 
-        if cardObj:isValidPickUp(self.gameState, playerColor, object) then
-            print('validPickUp')
-            self.gameState.card = object
-            self.gameState.cardObj = cardObj
-            cardObj:pickUpEvent(self.gameState, playerColor, object)
-            print('Passed Event')
+        if holdData.cardObj:isValidPickUp(self.gameState, playerColor, object) then
+            self.gameState.attackerData = holdData
+            holdData.cardObj:pickUpEvent(self.gameState, playerColor)
         else
-            self.gameState.card = nil
-            self.gameState.cardObj = nil
+            self.gameState.attackerData = nil
         end
     end
 end
 
 function GameManager:onDrop(playerColor, object)
-    if not self.inGame or not self.scriptsEnabled or
-        playerColor ~= PlayerList:getWhosTurn() or
-        object.tag ~= 'Card' or self.gameState.card == nil or
-        object.getGUID() ~= self.gameState.card.getGUID() then
+    if not self.inGame or not self.scriptsEnabled then
         return
     end
 
-    if  Shuffler:isDiscarded(self.gameState.card) or
-    contains(Player[playerColor].getHandObjects(), object) or
-    self.gameState.cardObj.isValidDrop(gameState, playerColor, object) == false then
-        self.gameState.cardObj:dropEvent(self.gameState, playerColor, object, false)
-        self.gameState.card = nil
-        self.gameState.cardObj = nil
+    local holdData = HandTracker:getHolding(playerColor)
+    if holdData == nil or holdData.owned ~= true or
+    holdData.card.getGUID() ~= object.getGUID() then
+        HandTracker:dropEvent(playerColor, object)
         return
     end
 
-    self.gameState.cardObj:dropEvent(self.gameState, playerColor, object, true)
+    if self.gameState.id == DECIDING_STATE then
+        if playerColor == PlayerList:getWhosTurn() and holdData.type == CARD_TYPE then
+            holdData.cardObj:dropEvent(self.gameState, playerColor)
+
+            local discarded = Shuffler:isDiscarded(object)
+            if contains(Player[playerColor].getHandObjects(), object) or discarded or
+            holdData.cardObj:isValidDrop(self.gameState, playerColor, object) == false then
+                self.gameState.card = nil
+                self.gameState.cardObj = nil
+
+                if discarded then
+                    self:nextTurn()
+                end
+            else
+                holdData.cardObj:useScript(self.gameState, playerColor)
+                if holdData.cardObj.waitForResponse then
+                    self.gameState.id = RESPONSE_STATE
+                else
+                    self:nextTurn()
+                end
+            end
+        end
+    elseif self.gameState.id == RESPONSE_STATE then
+        if  self.gameState.anyResponse or self.gameState.responder == playerColor then
+            local aData = self.gameState.attackerData
+            if aData ~= nil then
+                if not contains(Player[playerColor].getHandObjects(), object) and
+                aData.cardObj:isValidDrop(self.gameState, playerColor, object) then
+                    self.gameState.responder = playerColor
+                    self.gameState.responderData = holdData
+                    if aData.cardObj:responseScript(self.gameState, PlayerList:getWhosTurn()) then
+                        self:nextTurn(playerColor)
+                    else
+                        self:nextTurn()
+                    end
+                end
+            end
+        end
+    end
+
+    HandTracker:dropEvent(playerColor, object)
 end

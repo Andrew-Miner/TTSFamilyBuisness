@@ -1,3 +1,27 @@
+leftOfColor = {
+    White = 'Brown',
+    Brown = 'Red',
+    Red = 'Orange',
+    Orange = 'Yellow',
+    Yellow = 'Green',
+    Green = 'Teal',
+    Teal = 'Blue',
+    Blue = 'Purple',
+    Purple = 'Pink',
+    Pink = 'White'
+}
+
+function getLeftOf(playerColor)
+    local next = playerColor
+    local player = nil
+    repeat
+        next = leftOfColor[next]
+        player = PlayerList:getPlayer(next)
+    until(next == playerColor or (player ~= nil and player:isAlive()))
+    return next
+end
+
+
 ColorData = {
     zone = '',
     rotation = {0, 180, 0},
