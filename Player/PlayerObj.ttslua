@@ -87,3 +87,6 @@ function PlayerObj:getMobCardIndex(card)
     end
     return 0
 end
+
+function PlayerObj:setMobstersLock(lock)
+end

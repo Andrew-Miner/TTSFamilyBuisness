@@ -4,11 +4,21 @@ CONSTANTS = {
     drawPos = {-5.23, 2.96, 0.02},
 }
 
-function contains(list, object)
+-- Usest TableTop getGUID to compare
+-- objects when func is nil
+function contains(list, object, func)
     if list ~= nil then
         for _,obj in pairs(list) do
-            if obj.getGUID() == object.getGUID() then
-                return true
+            print(_)
+            if func ~= nil then
+                local r = func(object, obj)
+                if r ~= false and r ~= nil then
+                    return r
+                end
+            else
+                if object.getGUID() == obj.getGUID() then
+                    return true
+                end
             end
         end
     end
@@ -233,4 +243,31 @@ function callObjWithParams(args)
     local obj = assert(_G[args.objName], 'No object named ' .. args.objName)
     local fcn = assert(obj[args.functionName], 'Function ' .. args.functionName .. ' not found in ' .. args.objName .. ' object')
     return fcn(obj, unpack(tbl))
+end
+
+function getClosestPlayer(obj, playerColors, targetActivePlayer)
+    local player = nil
+    local minDistance = 99999
+    local activePlayer = PlayerList:getWhosTurn()
+    for _,pColor in pairs(playerColors) do
+        if targetActivePlayer or pColor.color ~= activePlayer then
+            local pos = Player[pColor.color].getHandTransform().position
+            local distance = findProximity(pos, obj)
+
+            if minDistance > distance then
+                minDistance = distance
+                player = pColor
+            end
+        end
+    end
+
+    return player
+end
+
+function findProximity(targetPos, object)
+    local objectPos = object.getPosition()
+    local xDistance = math.abs(targetPos.x - objectPos.x)
+    local zDistance = math.abs(targetPos.z - objectPos.z)
+    local distance = xDistance^2 + zDistance^2
+    return math.sqrt(distance)
 end

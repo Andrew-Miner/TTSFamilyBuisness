@@ -2,7 +2,7 @@
 
 Contract = Card:new('Contract',
                     'Place an opponent\'s mobster on the Hit List.',
-                    'Red', 12, true, false, 'Contract', true,
+                    'Red', 12, true, true, 'Contract', true,
                     {'Family Influence', 'Mob Power'})
 
 function Contract:new(name, description, count, targetLabel, waitForResponse, responses)
@@ -35,7 +35,7 @@ function Contract:responseScript(playerColor, responderColor, responseCard)
         if player.mobCount >= 1 then
             -- Add 1 Attacker Mobster to HitList
             local mob = player:removeMobCard()
-            hitList.call('addMobster', { mob, false })
+            HitList:addMobster(mob, false)
         end
         return true
     else
@@ -43,8 +43,57 @@ function Contract:responseScript(playerColor, responderColor, responseCard)
         if responder.mobCount >= 1 then
             -- Add 1 Defender Mobster to HitList
             local mob = responder:removeMobCard()
-            hitList.call('addMobster', { mob, false })
+            HitList:addMobster(mob, false)
         end
         return false
     end
+end
+
+function Contract:isValidPickUp(gameState, playerColor, object)
+    if gameState.id == DECIDING_STATE then
+        return true
+    end
+    return false
+end
+
+function Contract:pickUpEvent(gameState, playerColor, object)
+    if gameState.id == DECIDING_STATE then
+        TargetLabel:show()
+        TargetLabel:updateTarget(gameState)
+    end
+end
+
+function Contract:isValidDrop(gameState, playerColor, object)
+    if gameState.id == DECIDING_STATE then
+        return true
+    end
+end
+
+function Contract:dropEvent(gameState, playerColor, object, wasValid)
+    if gameState.id ~= DECIDING_STATE then
+        return
+    end
+
+    TargetLabel:hide()
+    if wasValid then
+        print(TargetLabel:getTarget())
+        local target = contains(Player.getPlayers(), TargetLabel:getTarget(),
+        function(obj1, obj2)
+            if obj1 == obj2.steam_name then
+                return obj2.color
+            end
+        end)
+        print(target)
+
+        if target == false then
+            return
+        end
+
+        UI.show('sickButton')
+        UI.setAttribute('sickButton', 'visibility', target)
+        UI.setAttribute('sickButton', 'textColor', 'white')
+    end
+end
+
+function Contract:updateEvent(params)
 end

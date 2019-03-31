@@ -32,12 +32,20 @@ function Card:cardFunction(playerColor, closestColor)
 
 end
 
-function Card:dropEvent(params)
+function Card:isValidPickUp(gameState, playerColor, object)
+    return true
+end
+
+function Card:pickUpEvent(gameState, playerColor, object)
 
 end
 
-function Card:pickUpEvent(params)
+function Card:isValidDrop(gameState, playerColor, object)
+    return true
+end
 
+function Card:dropEvent(gameState, playerColor, object, wasValid)
+    
 end
 
 function Card:updateEvent(params)

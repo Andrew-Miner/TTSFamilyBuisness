@@ -7,7 +7,7 @@ PlayerList = {
 }
 
 function PlayerList:new(activeColor, players, playerCount)
-    setmetatable({}, PlayerList)
+    local self = setmetatable({}, PlayerList)
     self.activeColor = activeColor
     self.players = players
     self.playerCount = playerCount

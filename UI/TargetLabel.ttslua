@@ -1,0 +1,53 @@
+TargetLabel = {
+}
+
+function TargetLabel:show()
+    UI.show('targetLabel')
+    UI.show('targetName')
+end
+
+function TargetLabel:hide()
+    UI.hide('targetLabel')
+    UI.hide('targetName')
+end
+
+function TargetLabel:setTarget(target)
+    if target == nil then
+        self.target = 'error'
+        return
+    end
+    UI.setAttribute("targetName", "text", target)
+end
+
+function TargetLabel:setLabel(label)
+    if label == nil then
+        self.target = 'error: '
+        return
+    end
+    UI.setAttribute("targetLabel", "text", label .. ': ')
+end
+
+function TargetLabel:getLabel()
+    return UI.getAttribute('targetLabel', 'text')
+end
+
+function TargetLabel:getTarget()
+    return UI.getAttribute('targetName', 'text')
+end
+
+function TargetLabel:setVisibility(colors)
+end
+
+function TargetLabel:updateTarget(gameState)
+    if gameState.card == nil then
+        return
+    end
+
+    closestPlayer = getClosestPlayer(gameState.card, PlayerList:getPlayers(), gameState.cardObj.targetSelf)
+    if closestPlayer ~= nil then
+        UI.setAttribute("targetName", "text", Player[closestPlayer.color].steam_name)
+        UI.setAttribute("targetName", "color", closestPlayer.color)
+        UI.setAttribute("targetLabel", "text", gameState.cardObj.targetLabel .. ': ')
+        UI.setAttribute("targetLabel", "color", gameState.cardObj.type)
+    end
+end

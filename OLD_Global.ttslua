@@ -1,0 +1,698 @@
+--[[ Lua code. See documentation: https://api.tabletopsimulator.com/ --]]
+
+cardDataGUID = '5dfcd6'
+hitlistGUID = 'fb6baf'
+drawTileGUID = 'c938e8'
+shufflerGUID = '6b5fb8'
+clockGUID = 'ff98f8'
+clockObj = nil
+
+in_game = true
+state = 'deciding'
+
+validDrop = true
+validPickUp = false
+
+droppedPlayer = nil
+holdingCard = nil
+closestPlayer = nil
+
+targeter = nil
+defender = nil
+lastCardData = nil
+lastCard = nil
+
+waitForResponse = nil
+
+allResponses = {}
+hitListPick = nil
+lastTick = 11
+
+
+
+card_zones = {
+    cards = '1cccaa',
+    discards = '392c20',
+    hit_list = 'f3f4f7',
+    next_hit = '1fe8a0',
+    dead_pile = '76c97c'
+}
+
+game_states = {
+    'drawing',
+    'deciding',
+    'waiting_for_response',
+    'waiting_for_general_response',
+    'organizing_list',
+    'mobster_menu',
+    'timed_mob_menu'
+}
+--[[ The onLoad event is called after the game save finishes loading. --]]
+function onLoad()
+    playerList = getObjectFromGUID(drawTileGUID)
+    cardData = getObjectFromGUID(cardDataGUID)
+    shuffler = getObjectFromGUID(shufflerGUID)
+    hitList = getObjectFromGUID(hitlistGUID)
+    clockObj = getObjectFromGUID(clockGUID)
+    --clockObj.call('addCallBack', )
+    clockObj.call('addCallBack', {{Global, 'onMenuClick'}})
+
+    --clockObj.setPosition({0,3,0})
+
+    UI.hide('targetLabel')
+    UI.hide('targetName')
+    UI.hide('sickButton')
+
+    UI.hide('counterTime')
+    UI.hide('counterCard')
+    UI.hide('counterLabel')
+    UI.hide('selectTime')
+    UI.hide('selectLabel')
+
+    UI.hide('doneButton')
+
+    UI.hide('mobSelection')
+end
+
+--[[ The onUpdate event is called once per frame. --]]
+function onUpdate()
+    if in_game == false then
+        return
+    end
+
+    -- Card Is A Playable Card and the player is Targeting
+    if validPickUp and state == game_states[2] and hCardData.hasTarget then
+        if contains(Player[playerList.call('getActivePlayer')].getHandObjects(), holdingCard) then
+            UI.hide('targetLabel')
+            UI.hide('targetName')
+        else
+            UI.show('targetLabel')
+            UI.show('targetName')
+            closestPlayer = getClosestPlayer(holdingCard, playerList.call('getPlayers'))
+            if closestPlayer ~= nil then
+                UI.setAttribute("targetName", "text", Player[closestPlayer].steam_name)
+                UI.setAttribute("targetName", "color", closestPlayer)
+                UI.setAttribute("targetLabel", "text", hCardData.targetLabel .. ': ')
+                UI.setAttribute("targetLabel", "color", hCardData.type)
+            end
+        end
+    end
+
+    --print("CLOCK")
+    --print(clockObj)
+
+    if clockObj.Clock.paused ~= true and state == game_states[4] then
+        if clockObj.getValue() == 0 then
+            UI.hide('counterTime')
+            UI.hide('counterCard')
+            UI.hide('counterLabel')
+            if cardData.call('runCardResponse', {lastCardData.name, {playerList.call('getActivePlayer'), state}}) ~= true then
+                nextTurn(playerList.call('getActivePlayer'), 1)
+            end
+        else
+            lastTick = clockObj.getValue()
+            UI.setAttribute('counterTime', "text", ": " .. tostring(lastTick))
+        end
+    end
+
+    if clockObj.Clock.paused ~= true and state == game_states[7] and clockObj.call('wait') ~= true then
+        if clockObj.getValue() == 0 then
+            UI.hide('counterTime')
+            UI.hide('counterCard')
+            UI.hide('counterLabel')
+            UI.hide('selectLabel')
+            UI.hide('selectTime')
+
+            local selection = clockObj.call('getSelection', {playerList.call('getActivePlayer')})
+            if droppedPlayer ~= nil then
+                proccessResponse({playerList.call('getActivePlayer'), lastCardData, selection, droppedPlayer, hCardData}, droppedPlayer, playerList.call('getActivePlayer'))
+            else
+                cardData.call('runCardResponse', {lastCardData.name, {playerList.call('getActivePlayer'), lastCardData, selection}})
+                nextTurn(getLeftOf(playerList.call('getActivePlayer')), 1)
+            end
+        else
+            lastTick = clockObj.getValue()
+            UI.setAttribute('counterTime', "text", ": " .. tostring(lastTick))
+            UI.setAttribute('selectTime', "text", tostring(lastTick))
+        end
+    end
+end
+
+function onObjectPickUp(player_color,  picked_up_object)
+    if in_game == false then
+        return
+    end
+
+    validPickUp = state_funcs[state].isValidPickUp(player_color, picked_up_object)
+    print("Valid Pick Up: " .. tostring(validPickUp))
+
+    if validPickUp then -- Valid Action
+        holdingCard = picked_up_object
+        hCardData = cardData.call('getCardData', {holdingCard.getName()})
+    --elseif validPickUp == false then -- Invalid Action
+
+    --elseif validPickUp == nil then -- player_color is not active player
+
+    end
+
+    state_funcs[state].onPickUp(validPickUp, player_color, picked_up_object)
+end
+
+function onObjectDrop(player_color,  dropped_object)
+    if in_game == false then
+        return
+    end
+    --print(player_color .. ' dropped ' .. dropped_object.getName())
+    validDrop = state_funcs[state].isValidDrop(player_color, dropped_object)
+    print("Valid Drop: " .. tostring(validDrop))
+
+    if validDrop then -- Valid Action
+        local lGuid = holdingCard.getGUID()
+        Wait.time(function()
+            local obj = getObjectFromGUID(lGuid)
+            if obj ~= nil then
+                shuffler.call('discardCard', {obj})
+            end
+        end, 1)
+    elseif validDrop == false then -- Invalid Action
+        if validPickUp then
+
+        end
+    --elseif validDrop == nil then -- player_color is not active player
+
+    end
+
+    state_funcs[state].onDrop(validDrop, player_color, dropped_object)
+end
+
+function onSickPuppy(player, _, idValue)
+    if state ~= game_states[3] then
+        return
+    end
+
+    if player.color ~= playerList.call('getActivePlayer') then
+        return
+    end
+
+    proccessResponse({targeter, defender, ''}, defender, targeter)
+end
+
+function onDone(player, _, idValue)
+    if state ~= game_states[5] then
+        return
+    end
+
+    if player.color ~= playerList.call('getActivePlayer') then
+        return
+    end
+
+    if lastCardData == nil then
+        lastCardData = cardData.call('getCardData', {'Vendetta'})
+    end
+
+    if cardData.call('runCardResponse', {lastCardData.name, {nil, state}}) ~= true then -- dumb vendetta hack
+        nextTurn(getLeftOf(playerList.call('getActivePlayer')), 1)
+    end
+end
+
+function onMenuClick(t_player_selection)
+    local player = t_player_selection[1]
+    local mob_asset = t_player_selection[2]
+    if state == game_states[7] and player == playerList.call('getActivePlayer') then
+        if lastCardData ~= nil then
+            if lastCardData.waitForResponse ~= true then
+                cardData.call('runCardResponse', {lastCardData.name, {player, lastCardData, mob_asset}})
+                nextTurn(getLeftOf(player), 1)
+            elseif droppedPlayer ~= nil then
+                proccessResponse({playerList.call('getActivePlayer'), lastCardData, mob_asset, droppedPlayer, hCardData}, droppedPlayer, playerList.call('getActivePlayer'))
+            end
+        end
+        UI.hide('mobSelection')
+        --UI.hide('selectLabel')
+        --UI.hide('selectTime')
+        --UI.setAttribute('selectLabel', 'text', 'Waiting For Counter: ')
+    end
+
+    if state == game_states[6] then
+        cardData.call('runCardResponse', {lastCardData.name, {mob_asset, defender}})
+        nextTurn(getLeftOf(playerList.call('getActivePlayer')), 1)
+    end
+end
+
+function proccessResponse(params, responder, player)
+    local success = cardData.call('runCardResponse', {lastCardData.name, params})
+
+    if success then
+        -- Defenders Turn
+        if responder == nil then
+            nextTurn(playerList.call('getActivePlayer'), 2)
+        else
+            nextTurn(responder, 2)
+        end
+    elseif success ~= nil then
+        -- Next Turn
+        if player ~= nil then
+            nextTurn(getLeftOf(player), 1)
+        elseif targeter ~= nil then
+            nextTurn(getLeftOf(targeter), 1)
+        else
+            nextTurn(getLeftOf(playerList.call('getActivePlayer')), 1)
+        end
+    end
+end
+
+function tSetState(t_state)
+    setState(t_state[1])
+end
+
+function setState(game_state)
+    print("New State: " .. game_state)
+    state = game_state
+    lastCardData = hCardData
+    lastCard = holdingCard
+    holdingCard = nil
+    hCardData = nil
+    validPickUp = nil
+    validDrop = nil
+    closestPlayer = nil
+    droppedPlayer = nil
+end
+
+function tNextTurn(t_player_amount)
+    nextTurn(t_player_amount[1], t_player_amount[2])
+end
+
+function nextTurn(player_color, draw_amount)
+    if draw_amount <= 0 then
+        return nil
+    end
+
+    if playerList.call('getActivePlayer') == player_color then
+        print(player_color .. ' Wins!!!')
+    end
+
+    setState('deciding')
+    targeter = nil
+    defender = nil
+    waitForResponse = nil
+    allResponses = {}
+    hitListPick = nil
+    lastTick = 15
+
+    print('Next Turn: ' .. tostring(player_color))
+    playerList.call('setActivePlayer', { player_color })
+
+    Wait.time(function()
+        hitList.call('proccessDraw')
+        print('draw_cards:' .. tostring(dealCards(player_color, draw_amount)))
+    end, 1.5)
+end
+
+function dealCards(player_color, draw_amount)
+    local wait_time = 1.5
+    local cards = shuffler.call('getCards')
+
+    if cards == nil then
+        Wait.time(function()
+            dealCards(player_color, draw_amount)
+        end,0.5)
+        return false
+    end
+
+    local size = cards.getQuantity() ~= -1 and cards.getQuantity() or 1
+    if size >= draw_amount then
+        cards.deal(draw_amount, player_color)
+    else
+        cards.deal(size, player_color)
+        Wait.time(function()
+            dealCards(player_color, draw_amount - size)
+        end,0.5)
+        return false
+    end
+    return true
+end
+
+function listContains(t_list_object)
+    return contains(t_list_object[1], t_list_object[2])
+end
+
+function contains(list, object)
+    if list ~= nil then
+        for _,obj in pairs(list) do
+            if obj.getGUID() == object.getGUID() then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function getClosestPlayer(obj, playerColors)
+    local player = nil
+    local minDistance = 99999
+    local activePlayer = playerList.call('getActivePlayer')
+    for _,pColor in pairs(playerColors) do
+        if obj.targetSelf or pColor ~= activePlayer then
+            local pos = Player[pColor].getHandTransform().position
+            local distance = findProximity(pos, obj)
+
+            if minDistance > distance then
+                minDistance = distance
+                player = pColor
+            end
+        end
+    end
+
+    return player
+end
+
+function findProximity(targetPos, object)
+    local objectPos = object.getPosition()
+    local xDistance = math.abs(targetPos.x - objectPos.x)
+    local zDistance = math.abs(targetPos.z - objectPos.z)
+    local distance = xDistance^2 + zDistance^2
+    return math.sqrt(distance)
+end
+
+function getLeftOf(player_color)
+    local color = player_color
+    repeat
+        if color == 'White' then
+            color = 'Brown'
+        elseif color == 'Brown' then
+            color = 'Red'
+        elseif color == 'Red' then
+            color = 'Orange'
+        elseif color == 'Orange' then
+            color = 'Yellow'
+        elseif color == 'Yellow' then
+            color = 'Green'
+        elseif color == 'Green' then
+            color = 'Teal'
+        elseif color == 'Teal' then
+            color = 'Blue'
+        elseif color == 'Blue' then
+            color = 'Purple'
+        elseif color == 'Purple' then
+            color = 'Pink'
+        elseif color == 'Pink' then
+            color = 'White'
+        end
+    until(playerList.call('isAlive', {color}) or color == player_color)
+    return color
+end
+
+function dropChecks(player_color, dropped_object)
+    if playerList.call('getActivePlayer') ~= player_color then
+        return nil
+    end
+
+    if validPickUp == false or validPickUp == nil then
+        return false
+    end
+
+    if holdingCard == nil or dropped_object.getGUID() ~= holdingCard.getGUID() then
+        return false
+    end
+
+    return true
+end
+
+function getClock()
+    return clockObj
+end
+
+state_funcs = {
+    ['deciding'] = {
+        isValidPickUp = function(player_color, picked_up)
+            if playerList.call('getActivePlayer') ~= player_color then
+                return nil
+            end
+
+            if contains(Player[player_color].getHandObjects(), picked_up) then
+                if picked_up.tag == 'Card' then
+                    local data = cardData.call('getCardData', {picked_up.getName()})
+                    if data ~= nil then
+                        return true
+                    end
+                end
+            end
+            return false
+        end,
+
+        isValidDrop = function(player_color, dropped_object)
+            local check = dropChecks(player_color, dropped_object)
+            if check ~= true then
+                return false
+            end
+
+            if contains(Player[player_color].getHandObjects(), dropped_object) then
+                return false
+            end
+
+            if hCardData.type == 'Blue' and shuffler.call('isDiscarded', {holdingCard}) ~= true then
+                return false
+            end
+            return true
+        end,
+
+        onPickUp = function(valid, player_color, picked_up)
+        end,
+
+        onDrop = function(valid, player_color, dropped_object)
+            if valid ~= true then
+                return
+            end
+
+            if hCardData.type == 'Blue' or shuffler.call('isDiscarded', {holdingCard}) then
+                nextTurn(getLeftOf(player_color), 1)
+                UI.hide('targetLabel')
+                UI.hide('targetName')
+                return
+            end
+
+            if hCardData.hasTarget or hCardData.waitForRespone then
+                if hCardData.hasTarget then
+                    UI.hide('targetLabel')
+                    UI.hide('targetName')
+                end
+                targeter = player_color
+                defender = closestPlayer
+            end
+
+            local nextState = cardData.call('runCardScript', {hCardData.name, {closestPlayer, player_color}})
+
+            if hCardData.hasTarget and nextState == game_states[3] then
+                playerList.call('setActivePlayer', {defender})
+                setState(nextState)
+            elseif nextState == game_states[4] or nextState == game_states[5] or nextState == game_states[6] or nextState == game_states[7] then
+                setState(nextState)
+            else -- Get Player For Next Turn
+                nextTurn(getLeftOf(player_color), 1)
+            end
+        end
+    },
+
+    ['waiting_for_response'] = {
+        isValidPickUp = function(player_color, picked_up)
+            if playerList.call('getActivePlayer') ~= player_color then
+                return nil
+            end
+
+            if contains(Player[player_color].getHandObjects(), picked_up) then
+                if picked_up.tag == 'Card' then
+                    local data = cardData.call('getCardData', {lastCardData.name})
+                    if data ~= nil then
+                        for _,cardName in pairs(data.responses) do
+                            if cardName == picked_up.getName() then
+                                return true
+                            end
+                        end
+                    end
+                end
+            end
+            return false
+        end,
+
+        isValidDrop = function(player_color, dropped_object)
+            check = dropChecks(player_color, dropped_object)
+            if check ~= true then
+                return false
+            end
+
+            if contains(Player[player_color].getHandObjects(), dropped_object) then
+                return false
+            end
+            return true
+        end,
+
+        onPickUp = function(valid, player_color, picked_up)
+        end,
+
+        onDrop = function(valid, player_color, dropped_object)
+            if valid ~= true then
+                return
+            end
+
+            proccessResponse({targeter, defender, hCardData.name})
+        end
+    },
+
+    ['waiting_for_general_response'] = {
+        isValidPickUp = function(player_color, picked_up)
+            if holdingCard ~= nil then
+                return false
+            end
+
+            if playerList.call('getActivePlayer') == player_color then
+                return nil
+            end
+
+            if contains(Player[player_color].getHandObjects(), picked_up) then
+                if picked_up.tag == 'Card' then
+                    local data = cardData.call('getCardData', {lastCardData.name})
+                    if data ~= nil then
+                        for _,cardName in pairs(data.responses) do
+                            if cardName == picked_up.getName() then
+                                return true
+                            end
+                        end
+                    end
+                end
+            end
+            return false
+        end,
+
+        isValidDrop = function(player_color, dropped_object)
+            if validPickUp == false or validPickUp == nil then
+                return false
+            end
+
+            if holdingCard == nil or dropped_object.getGUID() ~= holdingCard.getGUID() then
+                return false
+            end
+
+            if contains(Player[player_color].getHandObjects(), dropped_object) then
+                holdingCard = nil -- needed to reset pickUp check
+                return false
+            end
+
+            return true
+        end,
+
+        onPickUp = function(valid, player_color, picked_up)
+        end,
+
+        onDrop = function(valid, player_color, dropped_object)
+            if valid ~= true then
+                return
+            end
+
+            if cardData.call('runCardResponse', {lastCardData.name, {playerList.call('getActivePlayer'), state, player_color, hCardData.name}}) ~= true then
+                nextTurn(player_color, 2)
+            end
+        end
+    },
+
+    ['organizing_list'] = {
+        isValidPickUp = function(player_color, picked_up)
+            return false
+        end,
+
+        isValidDrop = function(player_color, dropped_object)
+            return false
+        end,
+
+        onPickUp = function(valid, player_color, picked_up)
+        end,
+
+        onDrop = function(valid, player_color, dropped_object)
+        end
+    },
+
+    ['mobster_menu'] = {
+        isValidPickUp = function(player_color, picked_up)
+            return false
+        end,
+
+        isValidDrop = function(player_color, dropped_object)
+            return false
+        end,
+
+        onPickUp = function(valid, player_color, picked_up)
+        end,
+
+        onDrop = function(valid, player_color, dropped_object)
+        end
+    },
+
+    ['timed_mob_menu'] = {
+        isValidPickUp = function(player_color, picked_up)
+            if playerList.call('getActivePlayer') == player_color then
+                return false
+            end
+
+            if holdingCard ~= nil then
+                return false
+            end
+
+            if contains(Player[player_color].getHandObjects(), picked_up) then
+                if picked_up.tag == 'Card' then
+                    local data = cardData.call('getCardData', {lastCardData.name})
+                    if data == nil then
+                        return false
+                    end
+
+                    if data.waitForResponse then
+                        local picked_data = cardData.call('getCardData', {picked_up.getName()})
+                        if picked_data == nil or picked_data.type ~= 'Blue' then
+                            return false
+                        end
+
+                        for _,cardName in pairs(data.responses) do
+                            if cardName == picked_up.getName() then
+                                return true
+                            end
+                        end
+                    end
+                end
+            end
+
+            return false
+        end,
+
+        isValidDrop = function(player_color, dropped_object)
+            if playerList.call('getActivePlayer') == player_color then
+                return false
+            end
+
+            if validPickUp == false or validPickUp == nil then
+                return false
+            end
+
+            if holdingCard == nil or dropped_object.getGUID() ~= holdingCard.getGUID() then
+                return false
+            end
+
+            if contains(Player[player_color].getHandObjects(), dropped_object) then
+                holdingCard = nil -- needed to reset pickUp check
+                return false
+            end
+
+            return true
+        end,
+
+        onPickUp = function(valid, player_color, picked_up)
+        end,
+
+        onDrop = function(valid, player_color, dropped_object)
+            if valid ~= true then
+                return
+            end
+
+            droppedPlayer = player_color
+            local selection = clockObj.call('getSelection', {playerList.call('getActivePlayer')})
+            proccessResponse({playerList.call('getActivePlayer'), lastCardData, selection, droppedPlayer, hCardData}, droppedPlayer, playerList.call('getActivePlayer'))
+        end
+    }
+}

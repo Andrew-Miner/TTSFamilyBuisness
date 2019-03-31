@@ -1,11 +1,49 @@
 #include !/GlobalIncludes
 
+GameState = {
+    id = 0,
+    card = nil,
+    cardObj = nil,
+}
+
+function GameState:new(id, card, cardObj)
+    local self = setmetatable({}, GameState)
+    self.id = id
+    self.card = card
+    self.cardObj = cardObj
+    return self
+end
+
+DECIDING_STATE = 1
+ATTACK_STATE = 2
+DEFEND_STATE = 3
+
 GameManager = {
     scriptsEnabled = true,
     inGame = false,
     gameSetup = false,
-    setupDeck = nil
+    setupDeck = nil,
+    gameState = nil
 }
+
+function GameManager:onLoad()
+    self:hideUI()
+end
+
+function GameManager:hideUI()
+    UI.hide('targetLabel')
+    UI.hide('targetName')
+    UI.hide('sickButton')
+
+    UI.hide('counterTime')
+    UI.hide('counterCard')
+    UI.hide('counterLabel')
+    UI.hide('selectTime')
+    UI.hide('selectLabel')
+
+    UI.hide('doneButton')
+    UI.hide('mobSelection')
+end
 
 function GameManager:isInGame()
     return self.inGame
@@ -36,27 +74,130 @@ function GameManager:setupGame()
     HitList:reset()
 
     spawnCards()
+    buildPlayerObjs()
+    distributeMobs()
+    -- TODO: NOT HITLIST BUT PLAYER OBJ DATA
     if self.scriptsEnabled then
+        Global.call('callObjWithParams', {
+            objName = 'HitList',
+            functionName = 'setLock',
+            params = {true}
+        })
+
         Wait.time(function()
             self.setupDeck = Shuffler:getCards()
             print(self.setupDeck)
             self.setupDeck.interactable = false
         end, 1)
+
+        self.gameSetup = true
+        self.gameState = GameState:new(DECIDING_STATE)
+    else
+        Global.call('callObjWithParams', {
+            objName = 'HitList',
+            functionName = 'setLock',
+            params = {false}
+        })
+
+        self.gameSetup = false
     end
-
-    buildPlayerObjs()
-    distributeMobs()
-
-    self.gameSetup = true
 end
 
 function GameManager:startGame()
-    if not self.gameSetup then
-        print('Error: Setup the game first!')
+    if not self.scriptsEnabled then
+        return
     end
+
+    if not self.gameSetup or self.gameState == nil then
+        printToAll('Error: Setup the game first!', 'Red')
+        return
+    end
+
+    if PlayerList:size() > 6 then
+        printToAll("Error: Too many players!", 'Red')
+        return
+    end
+
+    if self.inGame then
+        printToAll("Error: Game in progress!", 'Red')
+        return
+    end
+
+    dealCards()
+    print('dealt?')
+    local random = PlayerList:getPlayers()[math.random(PlayerList:size())]
+    print('random found')
+    PlayerList:setTurn(random.color)
+    print('turn set')
+    printToAll(Player[PlayerList:getWhosTurn()].steam_name .. ' goes first!', 'Green')
+
+    self.setupDeck.interactable = true
+    self.setupDeck = nil
+    self.gameSetup = false
     self.inGame = true
 end
 
 function GameManager:endGame()
     self.inGame = false
+    self.gameState = nil
+    self:hideUI()
+end
+
+function GameManager:onUpdate()
+    if not self.inGame or not self.scriptsEnabled then
+        return
+    end
+
+    if self.gameState.id == DECIDING_STATE then
+        if self.gameState.cardObj ~= nil and self.gameState.cardObj.hasTarget then
+            TargetLabel:updateTarget(self.gameState)
+        end
+    end
+end
+
+function GameManager:onPickUp(playerColor, object)
+    if not self.inGame or not self.scriptsEnabled or
+        playerColor ~= PlayerList:getWhosTurn() or
+        object.tag ~= 'Card' then
+        return
+    end
+
+    -- Checks if the object is in the players hand
+    if contains(Player[playerColor].getHandObjects(), object) then
+        local cardObj = CARD_OBJS[object.getName()]
+        if cardObj == nil then
+            return
+        end
+
+        if cardObj:isValidPickUp(self.gameState, playerColor, object) then
+            print('validPickUp')
+            self.gameState.card = object
+            self.gameState.cardObj = cardObj
+            cardObj:pickUpEvent(self.gameState, playerColor, object)
+            print('Passed Event')
+        else
+            self.gameState.card = nil
+            self.gameState.cardObj = nil
+        end
+    end
+end
+
+function GameManager:onDrop(playerColor, object)
+    if not self.inGame or not self.scriptsEnabled or
+        playerColor ~= PlayerList:getWhosTurn() or
+        object.tag ~= 'Card' or self.gameState.card == nil or
+        object.getGUID() ~= self.gameState.card.getGUID() then
+        return
+    end
+
+    if  Shuffler:isDiscarded(self.gameState.card) or
+    contains(Player[playerColor].getHandObjects(), object) or
+    self.gameState.cardObj.isValidDrop(gameState, playerColor, object) == false then
+        self.gameState.cardObj:dropEvent(self.gameState, playerColor, object, false)
+        self.gameState.card = nil
+        self.gameState.cardObj = nil
+        return
+    end
+
+    self.gameState.cardObj:dropEvent(self.gameState, playerColor, object, true)
 end
