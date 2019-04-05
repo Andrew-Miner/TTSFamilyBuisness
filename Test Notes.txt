@@ -1,0 +1,32 @@
+To Be Tested:
+-------------
+Contract
+   - Responses:
+	- Mob Power
+	- Family Influence
+
+Double Contract
+   - Responses:
+	- Mob Power
+	- Family Influence
+
+Priority Contract
+   - Responses:
+	- Mob Power
+	- Family Influence
+
+Contract (No Fam)
+   - Responses:
+	- Mob Power
+	- Family Influence
+
+Contract (No Mob)
+   - Responses:
+	- Mob Power
+	- Family Influence
+
+
+Contract (No Blue)
+
+Tested:
+--------

@@ -1,0 +1,58 @@
+--#include Contract
+
+DoubleContract = Contract:new('Double Contract',
+                              'Place 2 of any one opponent\'s mobsters on the Hit List.',
+                              3, 'Double Contract', true,
+                              {'Family Influence', 'Mob Power'})
+
+function DoubleContract:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function DoubleContract:responseScript(gameState, playerColor)
+    UI.hide('sickButton')
+    if gameState.responderData ~= nil and gameState.responderData.card ~= nil then
+        local card = gameState.responderData.card.getName()
+        if card == 'Family Influence' then
+            local responder = PlayerList:getPlayer(gameState.responder)
+            if responder.mobCount >= 1 then
+                -- Add 1 Defender Mobster to HitList
+                local mob = responder:removeMobCard()
+                HitList:addMobster(mob, false)
+            end
+            return true
+        elseif card == 'Mob Power' then
+            local player = PlayerList:getPlayer(playerColor)
+            if player.mobCount >= 1 then
+                -- Add 1 Attacker Mobster to HitList
+                local mob = player:removeMobCard()
+                HitList:addMobster(mob, false)
+            end
+
+            print(gameState.responder)
+            local responder = PlayerList:getPlayer(gameState.responder)
+            if responder.mobCount >= 1 then
+                -- Add 1 Defender Mobster to HitList
+                local mob = responder:removeMobCard()
+                HitList:addMobster(mob, false)
+            end
+            return true
+        end
+    end
+
+    local responder = PlayerList:getPlayer(gameState.responder)
+    if responder.mobCount >= 1 then
+        -- Add 1 Defender Mobster to HitList
+        local mob = responder:removeMobCard()
+        HitList:addMobster(mob, false)
+    end
+    if responder.mobCount >= 1 then
+        -- Add 1 Defender Mobster to HitList
+        local mob = responder:removeMobCard()
+        HitList:addMobster(mob, false)
+    end
+    return false
+end

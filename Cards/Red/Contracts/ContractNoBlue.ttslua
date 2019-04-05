@@ -5,14 +5,21 @@ ContractNoBlue = Contract:new('Contract (No Blue Cards)',
                              1, 'Contract', false)
 
 function ContractNoBlue:new()
-    local self = setmetatable({}, ContractNoBlue)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
-function ContractNoBlue:cardFunction(playerColor, closestColor)
-    if playerList.call('getData', { closestColor }).mobCount >= 1 then
-        mob = playerList.call('removeMobCard', { closestColor })
-        hitList.call('addMobster', { mob, false })
+function ContractNoBlue:useScript(gameState, playerColor)
+    print(TargetLabel:getTarget())
+    local target = getPColorByName(TargetLabel:getTarget())
+    print(target)
+    local player = PlayerList:getPlayer(target)
+    if player.mobCount >= 1 then
+        local mob = player:removeMobCard()
+        HitList:addMobster(mob, false)
     end
-    return 'deciding'
+
+    return DECIDING_STATE
 end

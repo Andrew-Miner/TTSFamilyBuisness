@@ -1,0 +1,39 @@
+--#include Contract
+
+PriorityContract = Contract:new('Priority Contract',
+                                'Place an opponent\'s mobster first on the Hit List.',
+                                3, 'Priority Contract', true,
+                                {'Family Influence', 'Mob Power'})
+
+function PriorityContract:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function PriorityContract:responseScript(gameState, playerColor)
+    UI.hide('sickButton')
+    if gameState.responderData ~= nil and gameState.responderData.card ~= nil then
+        local card = gameState.responderData.card.getName()
+        if card == 'Family Influence' then
+            return true
+        elseif card == 'Mob Power' then
+            local player = PlayerList:getPlayer(playerColor)
+            if player.mobCount >= 1 then
+                -- Add 1 Attacker Mobster to HitList
+                local mob = player:removeMobCard()
+                HitList:insertMobster(mob, false, 1)
+            end
+            return true
+        end
+    end
+
+    local responder = PlayerList:getPlayer(gameState.responder)
+    if responder.mobCount >= 1 then
+        -- Add 1 Defender Mobster to HitList
+        local mob = responder:removeMobCard()
+        HitList:insertMobster(mob, false, 1)
+    end
+    return false
+end

@@ -13,19 +13,31 @@ Card = {
 }
 
 function Card:new(name, description, type, count, hasTarget, targetSelf, targetLabel, waitForResponse, responses)
-    local self = setmetatable({}, Card)
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
 
-    self.name = name
-    self.description = description
-    self.type = type
-    self.count = count
-    self.hasTarget = hasTarget
-    self.targetLabel = targetLabel
-    self.targetSelf = targetSelf
-    self.waitForResponse = waitForResponse
-    self.responses = responses
+    o.name = name
+    o.description = description
+    o.type = type
+    o.count = count
+    o.hasTarget = hasTarget
+    o.targetLabel = targetLabel
+    o.targetSelf = targetSelf
+    o.waitForResponse = waitForResponse
+    o.responses = responses
 
-    return self
+    return o
+end
+
+function Card:isResponse(card)
+    if card ~= nil then
+        return contains(self.responses, card.getName(),
+            function(name1, name2)
+                return name1 == name2
+            end)
+    end
+    return false
 end
 
 function Card:useScript(gameState, playerColor)
@@ -36,7 +48,7 @@ function Card:isValidPickUp(gameState, playerColor, object)
     return true
 end
 
-function Card:pickUpEvent(gameState, playerColor, object)
+function Card:pickUpEvent(gameState, playerColor)
 
 end
 
@@ -44,11 +56,11 @@ function Card:isValidDrop(gameState, playerColor, object)
     return true
 end
 
-function Card:dropEvent(gameState, playerColor, object)
+function Card:dropEvent(gameState, playerColor)
 
 end
 
-function Card:updateEvent(gameState, playerColor, responderColor)
+function Card:updateEvent(gameState, playerColor)
 
 end
 

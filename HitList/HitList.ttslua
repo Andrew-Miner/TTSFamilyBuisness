@@ -15,11 +15,14 @@ HitList = {
 }
 
 function HitList:new(killPerTurn)
-    setmetatable({}, HitList)
+    local self = setmetatable({}, HitList)
+    self.__index = self
+
     self.killPerTurn = killPerTurn
     self.mobCount = 0
     self.hitList = {}
     self.warActive = false
+
     return self
 end
 
@@ -108,7 +111,7 @@ function HitList:getIndex(mobCard)
 end
 
 function HitList:getMobsterByIndex(index)
-    return hitList[index]
+    return self.hitList[index]
 end
 
 function HitList:setLock(lock)

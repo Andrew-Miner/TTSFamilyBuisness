@@ -8,8 +8,6 @@ GameState = {
     responderData = nil
 }
 
--- TODO: MUST CONFIRM REPSONSE CARD IS DRAWN FROM HAND FUCK!!!!
-
 function GameState:new(id, attackerData, anyResponce, responder, responderData)
     local self = setmetatable({}, GameState)
 
@@ -37,6 +35,10 @@ GameManager = {
 
 function GameManager:onLoad()
     self:hideUI()
+end
+
+function GameManager:getState()
+    return self.gameState
 end
 
 function GameManager:hideUI()
@@ -180,10 +182,15 @@ function GameManager:onPickUp(playerColor, object)
         holdData.type ~= CARD_TYPE or holdData.owned ~= true then
             return
         end
-
+        print('isValid?')
+        print(holdData.cardObj.name)
+        print(holdData.cardObj.hasTarget)
+        print(holdData.cardObj.isValidDrop)
         if holdData.cardObj:isValidPickUp(self.gameState, playerColor, object) then
+            print('yes\npickUpEvent')
             self.gameState.attackerData = holdData
             holdData.cardObj:pickUpEvent(self.gameState, playerColor)
+            print('picked up')
         else
             self.gameState.attackerData = nil
         end

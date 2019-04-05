@@ -3,8 +3,10 @@
 MobWar = Card:new('Mob War', 'Start a Mob War.', 'Red', 1, false)
 
 function MobWar:new()
-    local self = setmetatable({}, MobWar)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function MobWar:cardFunction(playerColor, closestColor)

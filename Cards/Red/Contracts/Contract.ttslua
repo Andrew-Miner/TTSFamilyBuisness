@@ -6,16 +6,18 @@ Contract = Card:new('Contract',
                     {'Family Influence', 'Mob Power'})
 
 function Contract:new(name, description, count, targetLabel, waitForResponse, responses)
-    local self = setmetatable({}, Contract)
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
 
-    self.name = name
-    self.description = description
-    self.count = count
-    self.targetLabel = targetLabel
-    self.waitForResponse = waitForResposne
-    self.responses = responses
+    o.name = name
+    o.description = descriptions
+    o.count = count
+    o.targetLabel = targetLabel
+    o.waitForResponse = waitForResponse
+    o.responses = responses
 
-    return self
+    return o
 end
 
 function Contract:useScript(gameState, playerColor)
@@ -37,27 +39,28 @@ end
 
 function Contract:responseScript(gameState, playerColor)
     UI.hide('sickButton')
-    local card = gameState.responderData.card.getName()
-    print(card)
-    if card == 'Family Influence' then
-        return true
-    elseif card == 'Mob Power' then
-        local player = PlayerList:getPlayer(playerColor)
-        if player.mobCount >= 1 then
-            -- Add 1 Attacker Mobster to HitList
-            local mob = player:removeMobCard()
-            HitList:addMobster(mob, false)
+    if gameState.responderData ~= nil and gameState.responderData.card ~= nil then
+        local card = gameState.responderData.card.getName()
+        if card == 'Family Influence' then
+            return true
+        elseif card == 'Mob Power' then
+            local player = PlayerList:getPlayer(playerColor)
+            if player.mobCount >= 1 then
+                -- Add 1 Attacker Mobster to HitList
+                local mob = player:removeMobCard()
+                HitList:addMobster(mob, false)
+            end
+            return true
         end
-        return true
-    else
-        local responder = PlayerList:getPlayer(gameState.responder)
-        if responder.mobCount >= 1 then
-            -- Add 1 Defender Mobster to HitList
-            local mob = responder:removeMobCard()
-            HitList:addMobster(mob, false)
-        end
-        return false
     end
+
+    local responder = PlayerList:getPlayer(gameState.responder)
+    if responder.mobCount >= 1 then
+        -- Add 1 Defender Mobster to HitList
+        local mob = responder:removeMobCard()
+        HitList:addMobster(mob, false)
+    end
+    return false
 end
 
 -- Used to check if pick up should be tracked
@@ -70,21 +73,18 @@ end
 
 -- Used to check if useScript should be called
 function Contract:isValidDrop(gameState, playerColor, object)
-    print(gameState)
     if gameState.id == DECIDING_STATE then
         return true
     elseif gameState.id == RESPONSE_STATE then
-        return contains(self.responses, object.getName(),
-        function(obj1, obj2)
-            if obj1 == obj2 then
-                return true
-            end
-        end)
+        print(object.getName())
+        print(self.isResponse)
+        return self:isResponse(object)
     end
     return false
 end
 
 function Contract:pickUpEvent(gameState, playerColor)
+    print(gameState.id)
     if gameState.id == DECIDING_STATE then
         TargetLabel:show()
         TargetLabel:updateTarget(gameState)

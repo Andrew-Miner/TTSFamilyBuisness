@@ -3,8 +3,10 @@
 Ambush = Card:new('Ambush', 'Start a Mob War (2 executed each turn).', 'Red', 1, false)
 
 function Ambush:new()
-    local self = setmetatable({}, MobWar)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function Ambush:cardFunction(playerColor, closestColor)

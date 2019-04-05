@@ -5,8 +5,10 @@ Hit = Card:new('Hit',
                'Red', 1, true, true, 'Hit', false)
 
 function Hit:new()
-    local self = setmetatable({}, Hit)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function Hit:cardFunction(playerColor, closestColor)

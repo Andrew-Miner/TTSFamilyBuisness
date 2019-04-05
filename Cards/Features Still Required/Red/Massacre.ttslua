@@ -5,8 +5,10 @@ Massacre = Card:new('ST. Valentine\'s Day Massacre',
                     'Red', 1, false)
 
 function Massacre:new()
-    local self = setmetatable({}, Hit)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function Massacre:cardFunction(playerColor, closestColor)
