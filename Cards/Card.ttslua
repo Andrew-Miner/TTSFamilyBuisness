@@ -45,7 +45,13 @@ function Card:useScript(gameState, playerColor)
 end
 
 function Card:isValidPickUp(gameState, playerColor, object)
-    return true
+    if gameState.id == DECIDING_STATE and
+    (self.type == 'Red' or self.type == 'Green') then
+        return true
+    elseif gameState.id == DEFEND_STATE and self.type == 'Blue' then
+        return true
+    end
+    return false
 end
 
 function Card:pickUpEvent(gameState, playerColor)
@@ -53,7 +59,13 @@ function Card:pickUpEvent(gameState, playerColor)
 end
 
 function Card:isValidDrop(gameState, playerColor, object)
-    return true
+    if gameState.id == DECIDING_STATE and
+    (self.type == 'Red' or self.type == 'Green') then
+        return true
+    elseif gameState.id == RESPONSE_STATE then
+        return self:isResponse(object)
+    end
+    return false
 end
 
 function Card:dropEvent(gameState, playerColor)

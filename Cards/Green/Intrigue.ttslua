@@ -11,19 +11,21 @@ function Intrigue:new()
     return o
 end
 
-function Intrigue:cardFunction(playerColor, closestColor)
+function Intrigue:useScript(gameState, playerColor)
     if HitList:length() == 0 then
-        return 'deciding'
+        return DECIDING_STATE
     end
 
-    print('Params 2:' .. params[2])
-    UI.show('doneButton')
-    UI.setAttribute('doneButton', 'visibility', playerColor)
-    UI.setAttribute('doneButton', 'textColor', 'white')
+    DoneButton:show()
+    DoneButton:setVisibility(playerColor)
+    DoneButton:setCallback(
+        function(player, _, idValue)
+            Intrigue:responseScript(GameManager:getState(), playerColor)
+        end)
 
     local mobWar = HitList:isMobWar()
     local killPerTurn = HitList:getKillAmount()
-    print('Mob War1: '..tostring(mobWar))
+    print('Mob War: '..tostring(mobWar))
 
     local mobs = {}
     local length = HitList:length()
@@ -36,5 +38,13 @@ function Intrigue:cardFunction(playerColor, closestColor)
         HitList:removeMobster(m, true, m.getPosition(), m.getRotation())
     end
 
-    return 'organizing_list'
+    gameState.id = ACTIVE_STATE
+    return ACTIVE_STATE
+end
+
+function Intrigue:responseScript(gameState, playerColor)
+    DoneButton:hide()
+    addCardsFromTable(HitList)
+    GameManager:nextTurn()
+    return false
 end

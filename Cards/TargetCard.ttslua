@@ -1,0 +1,39 @@
+TargetCard = Card:new('TargetCard', 'description goes here',
+                      'type', 1, true, false, 'error', false, {})
+
+function TargetCard:new(name, description, type, count, targetSelf,
+                        targetLabel, waitForResponse, responses)
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+
+    o.name = name
+    o.description = description
+    o.type = type
+    o.count = count
+    o.targetLabel = targetLabel
+    o.targetSelf = targetSelf
+    o.waitForResponse = waitForResponse
+    o.responses = responses
+
+    return o
+end
+
+function TargetCard:pickUpEvent(gameState, playerColor)
+    if gameState.id == DECIDING_STATE then
+        TargetLabel:show()
+        TargetLabel:updateTarget(gameState)
+    end
+end
+
+function TargetCard:dropEvent(gameState, playerColor)
+    if gameState.id == DECIDING_STATE then
+        TargetLabel:hide()
+    end
+end
+
+function TargetCard:updateEvent(gameState, playerColor)
+    if gameState.id == DECIDING_STATE then
+        TargetLabel:updateTarget(gameState)
+    end
+end

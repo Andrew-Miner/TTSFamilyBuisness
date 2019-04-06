@@ -1,8 +1,8 @@
 --#include !/Cards/Card
 
-Hit = Card:new('Hit',
+Hit = TargetCard:new('Hit',
                'Execute any mobster. Place 1 of your mobsters on the Hit List.',
-               'Red', 1, true, true, 'Hit', false)
+               'Red', 1, true, 'Hit', false)
 
 function Hit:new()
     local o = {}
@@ -11,8 +11,9 @@ function Hit:new()
     return o
 end
 
-function Hit:cardFunction(playerColor, closestColor)
-    local hit = PlayerList:getPlayer(closestPlayer):removeMobCard()
+function Hit:useScript(gameState, playerColor)
+    local target = getPColorByName(TargetLabel:getTarget())
+    local hit = PlayerList:getPlayer(target):removeMobCard()
 
     if hit ~= nil then
         local deadPile = HitList:getDeadPile()
@@ -31,5 +32,5 @@ function Hit:cardFunction(playerColor, closestColor)
             HitList:addMobster(list, true)
         end
     end
-    return 'deciding'
+    return DECIDING_STATE
 end

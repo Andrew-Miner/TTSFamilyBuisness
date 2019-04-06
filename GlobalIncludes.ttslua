@@ -12,6 +12,7 @@
 #include !/UI/DoneButton
 
 #include !/Cards/Card
+#include !/Cards/TargetCard
 
 #include !/Cards/Red/Contracts/Contract
 #include !/Cards/Red/Contracts/ContractNoBlue
@@ -23,15 +24,15 @@
 #include !/Cards/Red/DoubleCross
 #include !/Cards/Features Still Required/Red/Turncoat
 #include !/Cards/Features Still Required/Red/Vendetta
-#include !/Cards/Features Still Required/Red/Hit
+#include !/Cards/Red/Hit
 #include !/Cards/Red/MobWar
 #include !/Cards/Red/Ambush
 #include !/Cards/Red/Massacre
 
 #include !/Cards/Green/Truce
-#include !/Cards/Features Still Required/Green/PayOff
-#include !/Cards/Features Still Required/Green/FedCrack
-#include !/Cards/Features Still Required/Green/Intrigue
+#include !/Cards/Green/PayOff
+#include !/Cards/Green/FedCrack
+#include !/Cards/Green/Intrigue
 #include !/Cards/Features Still Required/Green/Lam
 #include !/Cards/Features Still Required/Green/PoliceProtection
 #include !/Cards/Features Still Required/Green/Substitution

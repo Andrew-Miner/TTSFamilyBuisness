@@ -1,0 +1,1297 @@
+
+in_game = true
+drawTileGUID = 'c938e8'
+hitlistGUID = 'fb6baf'
+shufflerGUID = '6b5fb8'
+clockGUID = 'ff98f8'
+
+card_zones = {
+    cards = '1cccaa',
+    discards = '392c20',
+    hit_list = 'f3f4f7',
+    next_hit = '1fe8a0',
+    dead_pile = '76c97c'
+}
+
+function onLoad()
+    self.createButton({
+        label="Start", click_function="start",
+        function_owner=self, position={0,1,-4},
+        height=3000, width=7000, font_size=5000
+    })
+    self.createButton({
+        label="Reset", click_function="setup",
+        function_owner=self, position={0,1,4},
+        height=3000, width=7000, font_size=5000
+    })
+
+    playerList = getObjectFromGUID(drawTileGUID)
+    hitList = getObjectFromGUID(hitlistGUID)
+    shuffler = getObjectFromGUID(shufflerGUID)
+    mobData = getObjectFromGUID(clockGUID)
+end
+
+--[[ Setup a new game of Family Business]]
+function setup()
+    in_game = false
+    clearTable()
+    hitList.call('reset')
+    start_deck = spawnCards()
+end
+
+--[[ Start a new game of Family Business]]
+function start()
+    local count = tableLength(getSeatedPlayers())
+    if count > 6 then
+        print("Error: Too many players!")
+        return
+    end
+
+    if in_game != true then
+        in_game = true
+        playerCount = count
+        print('Assign')
+        assignMobs()
+        print('Distribute')
+        distributeMobs()
+        print('Deal Cards')
+        dealCards()
+        playerList.call("setActivePlayer", {playerList.call('getPlayers')[math.random(playerCount)]})
+        printToAll(Player[playerList.call('getActivePlayer')].steam_name .. ' goes first!', 'Green')
+        Wait.time(function()
+            local cards = shuffler.call('getCards')
+            cards.deal(1, playerList.call('getActivePlayer'))
+        end,0.5)
+    else
+        print("Error: Game already in progress!")
+    end
+end
+
+function tableLength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
+function clearTable()
+    local table = getAllObjects()
+    for key,value in pairs(table) do
+        if value.getGUID() != self.getGUID() then
+            if value.tag ~= 'Scripting' and value.tag ~= 'Tile' and value.tag ~= 'Clock' then
+                print(value.tag)
+                destroyObject(value)
+            end
+        end
+    end
+end
+
+function dealCards()
+    local cZone = getObjectFromGUID(card_zones.cards)
+    for _,obj in pairs(cZone.getObjects()) do
+        if obj ~= nil then
+            if obj.tag == 'Deck' and obj.getName() == 'Cards' then
+                obj.deal(5)
+                break
+            end
+        end
+    end
+end
+
+function spawnCards()
+    local cards = spawnObject({
+        type = 'DeckCustom',
+        position = {-10,-10,-10},
+        scale = {1.75, 1, 1.76},
+        rotation = {0, 180, 0},
+        snap_to_grid = true,
+        callback_function = cardSpawnCallback
+    })
+    cards.setCustomObject({
+        face = 'http://i.imgur.com/yt48q1A.jpg',
+        back = 'http://i.imgur.com/dlH3R3r.jpg',
+        number = 57
+    })
+    return cards
+end
+
+function cardSpawnCallback(cards)
+    cards.setName('Cards')
+    --cards.flip()
+    cards.use_gravity = false
+
+    for i,card in pairs(cards.getObjects()) do
+        local pos = i
+        for _,data in pairs(card_data) do
+            if pos <= data.count then
+                local obj = cards.takeObject({
+                    index = 0,
+                    position = {-5.23, 3, 0.02},--{-5.23, 1.29, 0.02},
+                    smooth = false,
+
+                    callback_function = function(obj)
+                        obj.setName(data.name)
+                        obj.setDescription(data.description)
+                    end
+                })
+                break
+            else
+                pos = pos - data.count
+            end
+        end
+    end
+
+    Wait.time(function()
+         local cZone = getObjectFromGUID(card_zones.cards)
+         for _,obj in pairs(cZone.getObjects()) do
+             if obj.tag == 'Deck' then
+                 obj.setName('Cards')
+                 obj.flip()
+                 Wait.time(function() obj.shuffle() end, 0.5)
+                 break
+            end
+         end
+     end, 0.5)
+end
+
+function assignMobs()
+    playerList.call('clear')
+    --for k,v in pairs(activePlayers) do activePlayers[k]=nil end
+
+    local usedMobs = {}
+    local unprefferedPlayers = {}
+    local players = getSeatedPlayers()
+
+    for _,color in pairs(players) do
+        if mob_colors[color] ~= nil and usedMobs[mob_colors[color]] == nil then
+            usedMobs[mob_colors[color]] = true
+            playerList.call('addPlayer', {color, mob_colors[color]})
+            --activePlayers[color] = mob_colors[color]
+        else
+            unprefferedPlayers[color] = true
+        end
+    end
+
+    for color,_ in pairs(unprefferedPlayers) do
+        for _,mob in pairs(mob_colors) do
+            if usedMobs[mob] == nil then
+                usedMobs[mob] = true
+                playerList.call('addPlayer', {color, mob})
+                break
+            end
+        end
+    end
+end
+
+function distributeMobs()
+    local count = 0
+    local mobsters = playerList.call('getMobsters')
+    for pColor, mob in pairs(mobsters) do
+        local mobDeck = nil
+        Wait.time(function()
+            if mob == mob_colors['Red'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/zcX4TaS.jpg',
+                            'http://i.imgur.com/HExYMXH.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            elseif mob == mob_colors['Purple'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/cKPZODZ.jpg',
+                            'http://i.imgur.com/biOb6kr.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            elseif mob == mob_colors['Yellow'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/8ndPVD5.jpg',
+                            'http://i.imgur.com/bSkI6mF.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            elseif mob == mob_colors['Green'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/xB6Xa5a.jpg',
+                            'http://i.imgur.com/YxqaGdp.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            elseif mob == mob_colors['Blue'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/B2SouMl.jpg',
+                            'http://i.imgur.com/dGBOinz.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            elseif mob == mob_colors['White'] then
+                mobDeck = spawnMobDeck(mob, 9,
+                            'http://i.imgur.com/DRFypZk.jpg',
+                            'http://i.imgur.com/SigBtap.jpg',
+                            function(obj) distributeMobDeck(pColor, obj) end)
+            end
+        end, 0.5*count)
+        count = count + 1
+    end
+end
+
+function spawnMobDeck(name, size, frontFace, backFace, callBack)
+    local cards = spawnObject({
+        type = 'DeckCustom',
+        scale = {1.75, 1, 1.76},
+        rotation = {0, 180, 0},
+        snap_to_grid = true,
+
+        callback_function = function(obj)
+            obj.setName(name)
+            callBack(obj)
+        end
+    })
+
+    cards.setCustomObject({
+        face = frontFace,
+        back = backFace,
+        number = size
+    })
+    return cards
+end
+
+function distributeMobDeck(playerColor, mobDeck)
+    local pos = Player[playerColor].getHandTransform().position
+    local data = playerList.call('getData', { playerColor })
+    for i,pos in pairs(data.positions) do
+        local obj = mobDeck.takeObject({
+            position = pos,
+            smooth = false,
+            rotation = data.rotation,
+
+            callback_function = function(obj)
+                obj.use_snap_points = true
+                print(mobData.call('getMobsterDataByIndex', {mobDeck.getName(), i}).name)
+                obj.setName(mobDeck.getName())
+                obj.setDescription(mobData.call('getMobsterDataByIndex', {mobDeck.getName(), i}).name)
+                playerList.call('addMobCard', {playerColor, obj})
+            end
+        })
+    end
+end
+
+function getCardData(t_name)
+    return card_data[t_name[1]]
+end
+
+function runCardScript(t_name_tparams)
+    return card_functions[t_name_tparams[1]](t_name_tparams[2])
+end
+
+function runCardResponse(t_name_tparams)
+    return card_responses[t_name_tparams[1]](t_name_tparams[2])
+end
+
+-- [[=================== CONSTANTS ======================]]
+mob_colors = {
+    Red = 'New York Mob',
+    Yellow = 'Moran Gang',
+    Green = 'Bank Robbers',
+    Blue = 'Capone Mob',
+    Purple = 'Purple Gang',
+    White = 'Murder Inc.'
+}
+
+function isMobster(t_card)
+    for _,m in pairs(mob_colors) do
+        if m == t_card[1].getName() then
+            return true
+        end
+    end
+    return false
+end
+
+organizing_list = {
+    {32.04, 1.03, 6.11},
+    {28.02, 1.03, 6.11},
+    {24.13, 1.03, 6.11},
+    {20.17, 1.03, 6.11},
+    {16.27, 1.03, 6.11},
+    {12.41, 1.03, 6.11},
+    {8.50, 1.03, 6.11},
+    {4.51, 1.03, 6.11},
+    {0.55, 1.03, 6.11},
+    {-3.36, 1.03, 6.11}
+}
+
+card_data = {
+    ['Contract'] = {
+        count = 12,
+        type = 'Red',
+        hasTarget = true,
+        targetSelf = false,
+        targetLabel = 'Contract',
+        waitForResponse = true,
+        name = 'Contract',
+        description = 'Place an opponent\'s mobster on the Hit List.',
+
+        responses = {
+            'Family Influence',
+            'Mob Power'
+        }
+    },
+
+    ['Priority Contract'] = {
+        count = 3,
+        type = 'Red',
+        hasTarget = true,
+        targetSelf = false,
+        targetLabel = 'Priority Contract',
+        waitForResponse = true,
+        name = 'Priority Contract',
+        description = 'Place an opponent\'s mobster first on the Hit List.',
+
+        responses = {
+            'Family Influence',
+            'Mob Power'
+        }
+    },
+
+    ['Double Contract'] = {
+        count = 3,
+        type = 'Red',
+        hasTarget = true,
+        targetSelf = false,
+        targetLabel = 'Double Contract',
+        waitForResponse = true,
+        name = 'Double Contract',
+        description = 'Place 2 of any one opponent\'s mobsters on the Hit List.',
+
+        responses = {
+            'Family Influence',
+            'Mob Power'
+        }
+    },
+
+    ['Contract (No Mob Power)'] = {
+        count = 3,
+        type = 'Red',
+        hasTarget = true,
+        targetSelf = false,
+        targetLabel = 'Contract',
+        waitForResponse = true,
+        name = 'Contract (No Mob Power)',
+        description = 'Place an opponent\'s mobster on the Hit List.',
+
+        responses = {
+            'Family Influence'
+        }
+    },
+
+    ['Contract (No Blue Cards)'] = {
+        count = 1,
+        type = 'Red',
+        hasTarget = true,
+        targetSelf = false,
+        targetLabel = 'Contract',
+        waitForResponse = false,
+        name = 'Contract (No Blue Cards)',
+        description = 'Place an opponent\'s mobster on the Hit List.'
+    },
+
+    ['Truce'] = {
+       count = 1,
+       type = 'Green',
+       hasTarget = false,
+       targetSelf = false,
+       waitForResponse = false,
+       name = 'Truce',
+       description = 'Stop a Mob War'
+   },
+
+   ['Contract (No Family Influence)'] = {
+       count = 3,
+       type = 'Red',
+       hasTarget = true,
+       targetSelf = false,
+       targetLabel = 'Contract',
+       waitForResponse = true,
+       name = 'Contract (No Family Influence)',
+       description = 'Place an opponent\'s mobster on the Hit List.',
+
+       responses = {
+           'Mob Power'
+       }
+   },
+
+   ['Vendetta'] = {
+       count = 1,
+       type = 'Red',
+       hasTarget = false,
+       waitForResponse = true,
+       name = 'Vendetta',
+       description = 'Place 2 mobsters from all opponents on the Hit List. Start a Mob War.',
+
+       responses = {
+           'Safe House'
+       }
+   },
+
+   ['Double Cross'] = {
+       count = 1,
+       type = 'Red',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'Double Cross',
+       description = 'Place 1 mobsters from all opponents on the Hit List.'
+   },
+
+   ['Hit'] = {
+       count = 1,
+       type = 'Red',
+       hasTarget = true,
+       targetSelf = true,
+       targetLabel = 'Hit',
+       waitForResponse = false,
+       name = 'Hit',
+       description = 'Execute any mobster. Place 1 of your mobsters on the Hit List.'
+   },
+
+   ['Mob War'] = {
+       count = 1,
+       type = 'Red',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'Mob War',
+       description = 'Start a Mob War.'
+   },
+
+   ['Turncoat'] = {
+       count = 1,
+       type = 'Red',
+       hasTarget = true,
+       targetSelf = true,
+       targetLabel = 'Kill Mobster',
+       waitForResponse = false,
+       name = 'Turncoat',
+       description = 'Switch 1 discarded mobster (of player with least) with 1 in play (of player with most).'
+   },
+
+   ['Ambush'] = {
+       count = 1,
+       type = 'Red',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'Ambush',
+       description = 'Start a Mob War (2 executed each turn).'
+   },
+
+   ['ST. Valentine\'s Day Massacre'] = {
+       count = 1,
+       type = 'Red',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'ST. Valentine\'s Day Massacre',
+       description = 'Execute all mobsters on the Hit List.'
+   },
+
+   ['Mob Power'] = {
+       count = 3,
+       type = 'Blue',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'Mob Power',
+       description = 'Reverse effect of any 1 Contract (place 1 of contractor\'s mobsters on the Hit List).'
+   },
+
+   ['Family Influence'] = {
+       count = 6,
+       type = 'Blue',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'Family Influence',
+       description = 'Cancel the effect of any 1 Contract (save 1 mobster).'
+   },
+
+   ['Finger'] = {
+       count = 2,
+       type = 'Blue',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'Finger',
+       description = 'Cancel 1 Take it on the Lam.'
+   },
+
+   ['Safe House'] = {
+       count = 1,
+       type = 'Blue',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'Safe House',
+       description = 'Cancels 1 Vendetta.'
+   },
+
+   ['Pay Off'] = {
+       count = 1,
+       type = 'Green',
+       hasTarget = true,
+       targetSelf = true,
+       targetLabel = 'Pay Off',
+       waitForResponse = false,
+       name = 'Pay Off',
+       description = 'Return all of 1 player\'s mobsters from the Hit List.'
+   },
+
+   ['Federal CrackDown'] = {
+       count = 1,
+       type = 'Green',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'Federal CrackDown',
+       description = 'Return all the mobsters on the Hit List to their players.'
+   },
+
+   ['Intrigue'] = {
+       count = 2,
+       type = 'Green',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'Intrigue',
+       description = 'Rearrange order of the Hit List.'
+   },
+
+   ['Police Protection'] = {
+       count = 2,
+       type = 'Green',
+       hasTarget = false,
+       waitForResponse = false,
+       name = 'Police Protection',
+       description = 'Remove any 1 mobster from the Hit List.'
+   },
+
+   ['Substitution'] = {
+       count = 2,
+       type = 'Green',
+       hasTarget = true,
+       targetSelf = true,
+       targetLabel = 'Substitute',
+       waitForResponse = false,
+       name = 'Substitution',
+       description = 'Replace 1 mobster on the Hit List with any 1 mobster in play.'
+   },
+
+   ['Take It On The Lam'] = {
+       count = 4,
+       type = 'Green',
+       hasTarget = false,
+       waitForResponse = true,
+       name = 'Take It On The Lam',
+       description = 'Remove 1 mobster from the Hit List.',
+
+       responses = {
+           'Finger'
+       }
+   }
+}
+
+card_functions = {
+    ['Contract'] = function(params)
+        UI.show('sickButton')
+        UI.setAttribute('sickButton', 'visibility', params[1])
+        UI.setAttribute('sickButton', 'textColor', 'white')
+        return 'waiting_for_response'
+     end,
+
+    ['Priority Contract'] = function(params)
+        UI.show('sickButton')
+        UI.setAttribute('sickButton', 'visibility', params[1])
+        UI.setAttribute('sickButton', 'textColor', 'white')
+        return 'waiting_for_response'
+     end,
+
+    ['Double Contract'] = function(params)
+        UI.show('sickButton')
+        UI.setAttribute('sickButton', 'visibility', params[1])
+        UI.setAttribute('sickButton', 'textColor', 'white')
+        return 'waiting_for_response'
+     end,
+
+    ['Contract (No Mob Power)'] = function(params)
+        UI.show('sickButton')
+        UI.setAttribute('sickButton', 'visibility', params[1])
+        UI.setAttribute('sickButton', 'textColor', 'white')
+        return 'waiting_for_response'
+     end,
+
+    ['Contract (No Blue Cards)'] = function(params)
+        if playerList.call('getData', params).mobCount >= 1 then
+            mob = playerList.call('removeMobCard', params)
+            hitList.call('addMobster', { mob, false })
+        end
+        return 'deciding'
+    end,
+
+    ['Truce'] = function(params)
+        hitList.call('stopMobWar')
+        return 'deciding'
+    end,
+
+    ['Contract (No Family Influence)'] = function(params)
+        UI.show('sickButton')
+        UI.setAttribute('sickButton', 'visibility', params[1])
+        UI.setAttribute('sickButton', 'textColor', 'white')
+        return 'waiting_for_response'
+     end,
+
+    ['Vendetta'] = function(params)
+        UI.show('counterTime')
+        UI.show('counterCard')
+        UI.show('counterLabel')
+
+        UI.setAttribute('counterTime', 'text', ': 10')
+        UI.setAttribute('counterTime', 'visibility', '')
+        UI.setAttribute('counterCard', 'visibility', '')
+        UI.setAttribute('counterCard', 'text', 'Safe House')
+        UI.setAttribute('counterLabel', 'visibility', '')
+
+
+        local clk = Global.call('getClock')
+        clk.Clock.setValue(11)
+        if clk.Clock.paused then
+            clk.Clock.pauseStart()
+        end
+
+        return 'waiting_for_general_response'
+     end,
+
+    ['Double Cross'] = function(params)
+        UI.show('doneButton')
+        UI.setAttribute('doneButton', 'visibility', params[2])
+        UI.setAttribute('doneButton', 'textColor', 'white')
+        local players = playerList.call('getPlayers')
+        local off = 0
+        for _,p in pairs(players) do
+            if p ~= params[2] then
+                local card = playerList.call('removeMobCard', {p})
+                if card then
+                    card.setPositionSmooth(organizing_list[_ - off], false, false)
+                    card.setRotationSmooth({0, 180, 0}, false, false)
+                else
+                    off = off + 1
+                end
+            end
+        end
+        return 'organizing_list'
+     end,
+
+    ['Hit'] = function(params)
+        local hit = playerList.call('removeMobCard', {params[1]})
+
+        if hit ~= nil then
+            local deadPile = hitList.call('getDeadPile')
+            if deadPile ~= nil then
+                deadPile.putObject(hit)
+            else
+                if hit.is_face_down ~= true then
+                    hit.flip()
+                end
+                hit.setPositionSmooth({39.78, 2.4, 0.07}, false, true)
+                hit.setRotationSmooth({0.00, 180.00, 0.00}, false, true)
+            end
+
+            local list = playerList.call('removeMobCard', {params[2]})
+            if list ~= nil then
+                hitList.call('addMobster', {list, true})
+            end
+        end
+        return 'deciding'
+     end,
+
+    ['Mob War'] = function(params)
+        hitList.call('startMobWar')
+        return 'deciding'
+    end,
+
+    ['Turncoat'] = function(params)
+        local deadPile = hitList.call('getDeadPile')
+
+        if deadPile ~= nil then
+            local mobsters = {}
+            if deadPile.tag == 'Card' then
+                table.insert(mobsters, deadPile.getDescription())
+            else
+                for _,obj in pairs(deadPile.getObjects()) do
+                    table.insert(mobsters, obj.description)
+                end
+            end
+
+            mobData.call('rebuildMenu', {mobsters})
+            Wait.time(function()
+                UI.show('mobSelection')
+                UI.setAttribute('mobSelection', 'visibility', playerList.call('getActivePlayer'))
+                UI.hide('targetLabel')
+                UI.hide('targetName')
+            end,1)
+        end
+
+        local mobster = playerList.call('removeMobCard', {params[1]})
+        if mobster ~= nil then
+            hitList.call('discardMobCard', {mobster})
+        end
+
+        if deadPile == nil then
+            return 'deciding'
+        end
+        return 'mobster_menu'
+     end,
+
+    ['Ambush'] = function(params)
+        hitList.call('startMobWar', { 2 })
+        return 'deciding'
+    end,
+
+    ['ST. Valentine\'s Day Massacre'] = function(params)
+        local length = hitList.call('length') / hitList.call('getKillAmount')
+        for i=1,length,1 do
+            Wait.time(function()
+                hitList.call('discardMobster', {1, true})
+            end, 0.4*(i-1))
+        end
+        return 'deciding'
+    end,
+
+    ['Mob Power'] = function(params)
+        print('Placeholder')
+        return 'deciding'
+     end,
+
+    ['Family Influence'] = function(params)
+        print('Placeholder')
+        return 'deciding'
+     end,
+
+    ['Finger'] = function(params)
+        print('Placeholder')
+        return 'deciding'
+     end,
+
+    ['Safe House'] = function(params)
+        print('Placeholder')
+        return 'deciding'
+     end,
+
+    ['Pay Off'] = function(params)
+        local length = hitList.call('length')
+        for i=length,1,-1 do
+            Wait.time(function()
+                local mob = hitList.call('getMobsterByIndex', {i})
+                local player = playerList.call('getPlayerByMobster', {mob.getName()})
+
+                if params[1] == player then
+                    hitList.call('removeMobsterByIndex', {hitList.call('length'), mob.getPosition(), {0.00, 180.00, 0.00}, true})
+                    playerList.call('addMobCard', {player, mob})
+                end
+            end, 1.2*(length-i))
+        end
+        return 'deciding'
+    end,
+
+    ['Federal CrackDown'] = function(params)
+        local length = hitList.call('length')
+        for i=1,length,1 do
+            Wait.time(function()
+                local mob = hitList.call('getMobsterByIndex', {hitList.call('length')})
+                hitList.call('removeMobsterByIndex', {hitList.call('length'), mob.getPosition(), {0.00, 180.00, 0.00}, true})
+                local player = playerList.call('getPlayerByMobster', {mob.getName()})
+
+                --local p = player
+                --local m = mob
+                playerList.call('addMobCard', {player, mob})
+            end, 0.3*(i-1))
+        end
+        return 'deciding'
+    end,
+
+    ['Intrigue'] = function(params)
+        if hitList.call('length') == 0 then
+            return 'deciding'
+        end
+
+        print('Params 2:' .. params[2])
+        UI.show('doneButton')
+        UI.setAttribute('doneButton', 'visibility', params[2])
+        UI.setAttribute('doneButton', 'textColor', 'white')
+
+        mobWar = hitList.call('isMobWar')
+        killPerTurn = hitList.call('getKillAmount')
+        print('Mob War1: '..tostring(mobWar))
+
+        local mobs = {}
+        local length = hitList.call('length')
+        for i=length,1,-1 do
+            local card = hitList.call('getMobsterByIndex', {i})
+            table.insert(mobs, card)
+        end
+
+        for _,m in ipairs(mobs) do
+            hitList.call('removeMobster', {m, m.getPosition(), m.getRotation(), true})
+        end
+
+        return 'organizing_list'
+     end,
+
+    ['Police Protection'] = function(params)
+        if hitList.call('length') == 0 then
+            return 'deciding'
+        end
+
+        local mobNames = {}
+        local length = hitList.call('length')
+        for i=1,length,1 do
+            table.insert(mobNames, hitList.call('getMobsterByIndex', {i}).getDescription())
+            print(mobNames[i])
+        end
+
+        mobData.call('rebuildMenu', {mobNames})
+        Wait.time(function()
+            local clk = Global.call('getClock')
+            clk.Clock.setValue(11)
+            if clk.Clock.paused then
+                clk.Clock.pauseStart()
+            end
+
+            UI.show('mobSelection')
+            UI.setAttribute('mobSelection', 'visibility', playerList.call('getActivePlayer'))
+
+            UI.show('selectLabel')
+            UI.show('selectTime')
+
+            UI.setAttribute('selectTime', 'text', '10')
+            UI.setAttribute('selectTime', 'visibility', params[2])
+            UI.setAttribute('selectLabel', 'visibility', params[2])
+        end,1)
+
+        return 'timed_mob_menu'
+     end,
+
+    ['Substitution'] = function(params)
+        if hitList.call('length') == 0 then
+            return 'deciding'
+        end
+
+        local pData = playerList.call('getData', {params[1]})
+        if pData.mobCount == 0 then
+            return 'deciding'
+        end
+
+        local mobNames = {}
+        local length = hitList.call('length')
+        for i=1,length,1 do
+            table.insert(mobNames, hitList.call('getMobsterByIndex', {i}).getDescription())
+            print(mobNames[i])
+        end
+
+        mobData.call('rebuildMenu', {mobNames})
+        Wait.time(function()
+            UI.show('mobSelection')
+            UI.setAttribute('mobSelection', 'visibility', playerList.call('getActivePlayer'))
+            UI.hide('targetLabel')
+            UI.hide('targetName')
+        end, 1)
+        return 'mobster_menu'
+     end,
+
+    ['Take It On The Lam'] = function(params)
+        if hitList.call('length') == 0 then
+            return 'deciding'               -- TODO: Maybe still allow for defense
+        end
+
+        local mobNames = {}
+        local length = hitList.call('length')
+        for i=1,length,1 do
+            table.insert(mobNames, hitList.call('getMobsterByIndex', {i}).getDescription())
+            print(mobNames[i])
+        end
+
+        mobData.call('rebuildMenu', {mobNames})
+        Wait.time(function()
+            local clk = Global.call('getClock')
+            clk.Clock.setValue(11)
+            if clk.Clock.paused then
+                clk.Clock.pauseStart()
+            end
+
+            local vis = nil
+            local found = false
+            local list = playerList.call('getPlayers')
+            for _,player in pairs(list) do
+                print(player)
+                if player == params[2] then
+                    found = true
+                else
+                    if vis ~= nil then
+                        vis = vis .. player
+                    else
+                        vis = player
+                    end
+
+                    local size = playerList.call('size')
+                    if _ ~= size and (_ > size - 1 or found) then
+                            vis = vis .. '|'
+                    end
+                end
+            end
+
+            print('Vis:' .. vis)
+            UI.show('counterTime')
+            UI.show('counterCard')
+            UI.show('counterLabel')
+
+            UI.setAttribute('counterTime', 'text', ': 10')
+            UI.setAttribute('counterTime', 'visibility', vis)
+            UI.setAttribute('counterCard', 'visibility', vis)
+            UI.setAttribute('counterCard', 'text', 'Finger')
+            UI.setAttribute('counterLabel', 'visibility', vis)
+
+            UI.show('selectLabel')
+            UI.show('selectTime')
+
+            UI.setAttribute('selectTime', 'text', '10')
+            UI.setAttribute('selectTime', 'visibility', params[2])
+            UI.setAttribute('selectLabel', 'visibility', params[2])
+
+            UI.show('mobSelection')
+            UI.setAttribute('mobSelection', 'visibility', playerList.call('getActivePlayer'))
+        end,1)
+        return 'timed_mob_menu'
+    end
+}
+
+card_methods = {
+    ['Contract'] = {
+        validPickUp = function(params)
+            UI.show('sickButton')
+            UI.setAttribute('sickButton', 'visibility', params[1])
+            UI.setAttribute('sickButton', 'textColor', 'white')
+            return 'waiting_for_response'
+        end,
+
+        validDrop = function(params)
+
+        end,
+
+        validUpdate = function(params)
+
+        end,
+
+        response = function(params)
+            UI.hide('sickButton')
+            local card = params[3]
+            if card == 'Family Influence' then
+                return true
+            elseif card == 'Mob Power' then
+                if playerList.call('getData', params).mobCount >= 1 then
+                    -- Add 1 Attacker Mobster to HitList
+                    local mob = playerList.call('removeMobCard', params)
+                    hitList.call('addMobster', { mob, false })
+                end
+                return true
+            else
+                if playerList.call('getData', {params[2]}).mobCount >= 1 then
+                    -- Add 1 Defender Mobster to HitList
+                    local mob = playerList.call('removeMobCard', {params[2]})
+                    hitList.call('addMobster', { mob, false })
+                end
+                return false
+            end
+        end
+    }
+}
+
+card_responses = {
+    ['Contract'] = function(params)
+        UI.hide('sickButton')
+        local card = params[3]
+        if card == 'Family Influence' then
+            return true
+        elseif card == 'Mob Power' then
+            if playerList.call('getData', params).mobCount >= 1 then
+                -- Add 1 Attacker Mobster to HitList
+                local mob = playerList.call('removeMobCard', params)
+                hitList.call('addMobster', { mob, false })
+            end
+            return true
+        else
+            if playerList.call('getData', {params[2]}).mobCount >= 1 then
+                -- Add 1 Defender Mobster to HitList
+                local mob = playerList.call('removeMobCard', {params[2]})
+                hitList.call('addMobster', { mob, false })
+            end
+            return false
+        end
+     end,
+
+    ['Priority Contract'] = function(params)
+        UI.hide('sickButton')
+        local card = params[3]
+        if card == 'Family Influence' then
+            return true
+        elseif card == 'Mob Power' then
+            if playerList.call('getData', params).mobCount >= 1 then
+                -- Add 1 Attacker Mobster to front of HitList
+                local mob = playerList.call('removeMobCard', params)
+                hitList.call('insertMobster', { mob, 1, false })
+                return true
+            end
+        else
+            if playerList.call('getData', {params[2]}).mobCount >= 1 then
+                -- Add 1 Defender Mobster to front of HitList
+                local mob = playerList.call('removeMobCard', {params[2]})
+                hitList.call('insertMobster', { mob, 1, false })
+            end
+            return false
+        end
+     end,
+
+    ['Double Contract'] = function(params)
+        UI.hide('sickButton')
+        local card = params[3]
+        if card == 'Family Influence' then
+            if playerList.call('getData', {params[2]}).mobCount >= 1 then
+                -- Add 1 Defender Mobster to HitList
+                local mob = playerList.call('removeMobCard', {params[2]})
+                hitList.call('addMobster', { mob, false })
+            end
+            return true
+        elseif card == 'Mob Power' then
+            if playerList.call('getData', params).mobCount >= 1 then
+                -- Add 1 Attacker Mobster to HitList
+                local aMob = playerList.call('removeMobCard', params)
+                hitList.call('addMobster', { aMob, false })
+            end
+            if playerList.call('getData', {params[2]}).mobCount >= 1 then
+                -- Add 1 Defender Mobster to HitList
+                local dMob = playerList.call('removeMobCard', {params[2]})
+                hitList.call('addMobster', { dMob, false })
+            end
+            return true
+        else
+            -- Add 2 Defender Mobster to HitList
+            if playerList.call('getData', {params[2]}).mobCount >= 1 then
+                local mob = playerList.call('removeMobCard', {params[2]})
+                hitList.call('addMobster', { mob, false })
+            end
+            if playerList.call('getData', {params[2]}).mobCount >= 1 then
+                local mob = playerList.call('removeMobCard', {params[2]})
+                hitList.call('addMobster', { mob, false })
+            end
+            return false
+        end
+     end,
+
+    ['Contract (No Mob Power)'] = function(params)
+        UI.hide('sickButton')
+        local card = params[3]
+        if card == 'Family Influence' then
+            return true
+        else
+            if playerList.call('getData', {params[2]}).mobCount >= 1 then
+                -- Add 1 Defender Mobster to HitList
+                local mob = playerList.call('removeMobCard', {params[2]})
+                hitList.call('addMobster', { mob, false })
+            end
+            return false
+        end
+     end,
+
+    ['Contract (No Family Influence)'] = function(params)
+        UI.hide('sickButton')
+        local card = params[3]
+        if card == 'Mob Power' then
+            if playerList.call('getData', params).mobCount >= 1 then
+                -- Add 1 Attacker Mobster to HitList
+                local mob = playerList.call('removeMobCard', params)
+                hitList.call('addMobster', { mob, false })
+            end
+            return true
+        else
+            if playerList.call('getData', {params[2]}).mobCount >= 1 then
+                -- Add 1 Defender Mobster to HitList
+                local mob = playerList.call('removeMobCard', {params[2]})
+                hitList.call('addMobster', { mob, false })
+            end
+            return false
+        end
+     end,
+
+     ['Vendetta'] = function(params)
+         print('here we go')
+         local state = params[2]
+         if state == 'waiting_for_general_response' then
+             vDefender = params[3]
+
+             UI.hide('counterTime')
+             UI.hide('counterCard')
+             UI.hide('counterLabel')
+
+             local clk = Global.call('getClock')
+             if clk.Clock.paused ~= true then
+                 clk.Clock.pauseStart()
+             end
+
+             local players = playerList.call('getPlayers')
+             local cPos = 1
+             local count = 0
+             for _,p in ipairs(players) do
+                 print(vDefender)
+                 if p ~= vDefender and p ~= params[1] then
+                     local card1 = playerList.call('removeMobCard', {p})
+                     if card1 then
+                         card1.setPositionSmooth(organizing_list[cPos], false, false)
+                         card1.setRotationSmooth({0, 180, 0}, false, false)
+                         cPos = cPos + 1
+                         count = count + 1
+                     end
+
+                     local card2 = playerList.call('removeMobCard', {p})
+                     if card2 then
+                         card2.setPositionSmooth(organizing_list[cPos], false, false)
+                         card2.setRotationSmooth({0, 180, 0}, false, false)
+                         cPos = cPos + 1
+                         count = count + 1
+                     end
+                 end
+             end
+
+             if count > 0 then
+                 UI.show('doneButton')
+                 UI.setAttribute('doneButton', 'visibility', params[1])
+                 UI.setAttribute('doneButton', 'textColor', 'white')
+
+                 Global.call('tSetState', {'organizing_list'})
+                 return true
+             end
+         elseif state == 'organizing_list' then
+             UI.hide('doneButton')
+             hitList.call('addCardsFromTable')
+             print('cards added')
+             if vDefender ~= nil then
+                 Global.call('tNextTurn', {vDefender, 2})
+                 return true
+             end
+         end
+         return false
+     end,
+
+     ['Double Cross'] = function(params)
+         UI.hide('doneButton')
+         hitList.call('addCardsFromTable')
+         return false
+     end,
+
+     ['Turncoat'] = function(params)
+         UI.hide('mobSelection')
+         local deadPile = hitList.call('getDeadPile')
+
+         if deadPile == nil or params[1] == 'close' then
+             return false
+         end
+
+         local mob_data = mobData.call('getMobsterDataByAssetName', {params[1]})
+         local player = playerList.call('getPlayerByMobster', {
+             mobData.call('getMobByMobsterName', {mob_data.name})
+         })
+
+         if deadPile.tag == 'Card' then
+             playerList.call('addMobCard', {player, deadPile})
+         elseif deadPile.tag == 'Deck' then
+             for _,obj in pairs(deadPile.getObjects()) do
+                 if obj.description ==  mob_data.name then
+                     local obj = deadPile.takeObject({
+                         position = {10, 10, 10},
+                         smooth = false,
+                         rotation = {0, 0, 0},
+                         guid = obj.guid,
+
+                         callback_function = function(obj)
+                             playerList.call('addMobCard', {player, obj})
+                         end
+                     })
+                     break
+                 end
+             end
+         end
+         return false
+     end,
+
+     ['Intrigue'] = function(params)
+         UI.hide('doneButton')
+         hitList.call('addCardsFromTable')
+
+         if mobWar then
+             hitList.call('startMobWar', {killPerTurn})
+         end
+         mobWar = nil
+         killPerTurn = nil
+         return false
+     end,
+
+     ['Police Protection'] = function(params)
+         local clk = Global.call('getClock')
+         if clk.Clock.paused ~= true then
+             clk.Clock.pauseStart()
+         end
+
+         UI.hide('mobSelection')
+         UI.hide('selectTime')
+         UI.hide('selectLabel')
+
+         if params[3] == nil or params[3] == 'close' then
+             return false
+         end
+
+         local mob_data = mobData.call('getMobsterDataByAssetName', {params[3]})
+         local player = playerList.call('getPlayerByMobster', {mobData.call('getMobByMobsterName', {mob_data.name})})
+         local card = hitList.call('removeMobsterByName', {mob_data.name, {10, 10, 10}, {0, 0, 0}, true})
+         playerList.call('addMobCard', {player, card})
+         return true
+      end,
+
+      ['Substitution'] = function(params)
+          UI.hide('mobSelection')
+          local mob_data = mobData.call('getMobsterDataByAssetName', {params[1]})
+          local player = playerList.call('getPlayerByMobster', {mobData.call('getMobByMobsterName', {mob_data.name})})
+
+          local length = hitList.call('length')
+          for i=1,length,1 do
+              local m = hitList.call('getMobsterByIndex', {i})
+              if m.getDescription() == mob_data.name then
+                  local newMob = playerList.call('removeMobCard', {params[2]})
+
+                  Wait.time(function()
+                      hitList.call('removeMobster', {m, {10, 10, 10}, {0, 0, 0}, true})
+                      playerList.call('addMobCard', {player, m})
+                  end, 0.5)
+
+                  Wait.time(function()
+                      if newMob ~= nil then
+                          hitList.call('insertMobster', {newMob, i, true})
+                      end
+                  end, 1)
+                  return false
+              end
+          end
+      end,
+
+      ['Take It On The Lam'] = function(params)
+          local clk = Global.call('getClock')
+          if clk.Clock.paused ~= true then
+              clk.Clock.pauseStart()
+          end
+
+          UI.hide('mobSelection')
+          UI.hide('counterTime')
+          UI.hide('counterCard')
+          UI.hide('counterLabel')
+          UI.hide('selectTime')
+          UI.hide('selectLabel')
+
+          if params[5] ~= nil then
+              return true
+          end
+
+          if params[3] ~= nil and params[3] ~= 'close' then
+              local mob_data = mobData.call('getMobsterDataByAssetName', {params[3]})
+              local player = playerList.call('getPlayerByMobster', {mobData.call('getMobByMobsterName', {mob_data.name})})
+              local card = hitList.call('removeMobsterByName', {mob_data.name, {10, 10, 10}, {0, 0, 0}, true})
+              playerList.call('addMobCard', {player, card})
+          end
+
+          return false
+      end
+}

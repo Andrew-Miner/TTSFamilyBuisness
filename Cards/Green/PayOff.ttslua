@@ -1,8 +1,8 @@
 --#include !/Cards/Card
 
-PayOff = Card:new('Pay Off',
+PayOff = TargetCard:new('Pay Off',
                   'Return all of 1 player\'s mobsters from the Hit List.',
-                  'Green', 1, true, true, 'Pay Off', false)
+                  'Green', 1, true, 'Pay Off', false)
 
 function PayOff:new()
     local o = {}
@@ -13,18 +13,22 @@ end
 
 -- TODO: check if leftShift from removeMobsterByIndex interferes width
 --       remove card
-function PayOff:cardFunction(playerColor, closestColor)
+function PayOff:useScript(gameState, playerColor)
+    print(TargetLabel:getTarget())
     local length = HitList:length()
+    local target = getPColorByName(TargetLabel:getTarget())
+
     for i=length,1,-1 do
         Wait.time(function()
             local mob = HitList:getMobsterByIndex(i)
             local player = PlayerList:getPlayerByMob(mob.getName())
 
-            if closestColor == player.color then
-                HitList:removeMobsterByIndex(length, true, nil, nil)
+            if target == player.color then
+                HitList:removeMobsterByIndex(i, true, nil, nil)
                 player:addMobCard(mob)
             end
         end, 0.02*(length-i))
     end
-    return 'deciding'
+
+    return DECIDING_STATE
 end

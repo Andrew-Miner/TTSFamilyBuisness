@@ -1,9 +1,9 @@
 --#include !/Cards/Card
 
-Contract = Card:new('Contract',
-                    'Place an opponent\'s mobster on the Hit List.',
-                    'Red', 12, true, true, 'Contract', true,
-                    {'Family Influence', 'Mob Power'})
+Contract = TargetCard:new('Contract',
+                          'Place an opponent\'s mobster on the Hit List.',
+                          'Red', 12, true, 'Contract', true,
+                          {'Family Influence', 'Mob Power'})
 
 function Contract:new(name, description, count, targetLabel, waitForResponse, responses)
     local o = {}
@@ -83,22 +83,22 @@ function Contract:isValidDrop(gameState, playerColor, object)
     return false
 end
 
-function Contract:pickUpEvent(gameState, playerColor)
-    print(gameState.id)
-    if gameState.id == DECIDING_STATE then
-        TargetLabel:show()
-        TargetLabel:updateTarget(gameState)
-    end
-end
+--function Contract:pickUpEvent(gameState, playerColor)
+--    print(gameState.id)
+--    if gameState.id == DECIDING_STATE then
+--        TargetLabel:show()
+--        TargetLabel:updateTarget(gameState)
+--    end
+--end
 
-function Contract:dropEvent(gameState, playerColor)
-    if gameState.id == DECIDING_STATE then
-        TargetLabel:hide()
-    end
-end
+--function Contract:dropEvent(gameState, playerColor)
+--    if gameState.id == DECIDING_STATE then
+--        TargetLabel:hide()
+--    end
+--end
 
-function Contract:updateEvent(gameState, playerColor)
-    if gameState.id == DECIDING_STATE then
-        TargetLabel:updateTarget(gameState)
-    end
-end
+--function Contract:updateEvent(gameState, playerColor)
+--    if gameState.id == DECIDING_STATE then
+--        TargetLabel:updateTarget(gameState)
+--    end
+--end

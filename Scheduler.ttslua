@@ -11,6 +11,8 @@
      callbackList = nil
  }
 
+-- TODO: rework to allow for canceling of tasks via task ids
+
 function ScheduledCallback:new(callbackList, delaySeconds, repeatSeconds, repeatTimes)
     local self = setmetatable({}, ScheduledCallback)
     self.fixedCallTime = Time.fixed_time + delay

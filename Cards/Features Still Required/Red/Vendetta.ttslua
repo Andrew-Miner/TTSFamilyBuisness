@@ -3,7 +3,7 @@
 
 Vendetta = Card:new('Vendetta',
                     'Place 2 mobsters from all opponents on the Hit List. Start a Mob War.',
-                    'Red', 1, false, false, '', true, {'Safe House'})
+                    'Red', 1, false, false, 'error', true, {'Safe House'})
 
 
 function Vendetta:cardFunction(playerColor, closestColor)
@@ -17,14 +17,19 @@ function Vendetta:cardFunction(playerColor, closestColor)
     UI.setAttribute('counterCard', 'text', 'Safe House')
     UI.setAttribute('counterLabel', 'visibility', '')
 
-    Scheduler:newRepeatingTask({
+    local id = Scheduler:newRepeatingTask({
         function(time, repeatCount)
             UI.setAttribute('counterTime', 'text', ": " .. tostring(10 - repeatCount))
             -- TODO: Change xml text
+            if repeatCount == 10 then
+                self:responseScript(GameManager:getState(), playerColor)
+            end
         end
     }, 1, 1, 10)
 
-    return 'waiting_for_general_response'
+    gameState.id = DEFEND_STATE
+    gameState.anyResponse = true
+    return DEFEND_STATE
 end
 
 function Vendetta:dropEvent(params)
@@ -39,6 +44,11 @@ function Vendetta:updateEvent(params)
 
 end
 
-function Vendetta:responseScript(params)
-
+function Vendetta:responseScript(gameState, playerColor)
+    if gameState.id == DEFEND_STATE then
+        UI.hide('counterTime')
+        UI.hide('counterCard')
+        UI.hide('counterLabel')
+    elseif gameState.id == ACTIE_STATE then
+    end
 end
