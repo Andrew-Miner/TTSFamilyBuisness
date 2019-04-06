@@ -21,7 +21,7 @@ function GameState:new(id, attackerData, anyResponce, responder, responderData)
 end
 
 DECIDING_STATE = 1
-ATTACK_STATE = 2
+ACTIVE_STATE = 2
 DEFEND_STATE = 3
 WIN_STATE = 4
 
@@ -34,6 +34,7 @@ GameManager = {
 }
 
 function GameManager:onLoad()
+    HitList:init()
     self:hideUI()
 end
 
@@ -41,19 +42,8 @@ function GameManager:getState()
     return self.gameState
 end
 
-function GameManager:hideUI()
-    UI.hide('targetLabel')
-    UI.hide('targetName')
-    UI.hide('sickButton')
-
-    UI.hide('counterTime')
-    UI.hide('counterCard')
-    UI.hide('counterLabel')
-    UI.hide('selectTime')
-    UI.hide('selectLabel')
-
-    UI.hide('doneButton')
-    UI.hide('mobSelection')
+function GameManager:setState(state)
+    self.gameState = state
 end
 
 function GameManager:isInGame()
@@ -74,6 +64,21 @@ end
 
 function GameManager:isEnabled()
     return self.scriptsEnabled
+end
+
+function GameManager:hideUI()
+    UI.hide('targetLabel')
+    UI.hide('targetName')
+    UI.hide('sickButton')
+
+    UI.hide('counterTime')
+    UI.hide('counterCard')
+    UI.hide('counterLabel')
+    UI.hide('selectTime')
+    UI.hide('selectLabel')
+
+    UI.hide('doneButton')
+    UI.hide('mobSelection')
 end
 
 function GameManager:setupGame()
@@ -158,6 +163,8 @@ function GameManager:nextTurn(playerColor)
     --end
 
     -- TODO: discard cards
+    -- TODO: draw Cards
+    HitList:processDraw()
 end
 
 function GameManager:onUpdate()
@@ -182,15 +189,10 @@ function GameManager:onPickUp(playerColor, object)
         holdData.type ~= CARD_TYPE or holdData.owned ~= true then
             return
         end
-        print('isValid?')
-        print(holdData.cardObj.name)
-        print(holdData.cardObj.hasTarget)
-        print(holdData.cardObj.isValidDrop)
+
         if holdData.cardObj:isValidPickUp(self.gameState, playerColor, object) then
-            print('yes\npickUpEvent')
             self.gameState.attackerData = holdData
             holdData.cardObj:pickUpEvent(self.gameState, playerColor)
-            print('picked up')
         else
             self.gameState.attackerData = nil
         end
@@ -226,7 +228,7 @@ function GameManager:onDrop(playerColor, object)
                 holdData.cardObj:useScript(self.gameState, playerColor)
                 if holdData.cardObj.waitForResponse then
                     self.gameState.id = RESPONSE_STATE
-                else
+                elseif self.gameState.id == DECIDING_STATE then
                     self:nextTurn()
                 end
             end

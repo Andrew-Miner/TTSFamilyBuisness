@@ -5,8 +5,10 @@ PoliceProtection = Card:new('Police Protection',
                             'Green', 2, false)
 
 function PoliceProtection:new()
-    setmetatable({}, PoliceProtection)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function PoliceProtection:cardFunction(playerColor, closestColor)

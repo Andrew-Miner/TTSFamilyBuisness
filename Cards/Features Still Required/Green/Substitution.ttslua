@@ -5,8 +5,10 @@ Substitution = Card:new('Substitution',
                         'Green', 2, true, true, 'Substitute', false)
 
 function Substitution:new()
-    setmetatable({}, Substitution)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function Substitution:cardFunction(playerColor, closestColor)

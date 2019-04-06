@@ -9,7 +9,7 @@ function Ambush:new()
     return o
 end
 
-function Ambush:cardFunction(playerColor, closestColor)
+function Ambush:useScript(gameState, playerColor)
     HitList:startMobWar(2)
-    return 'deciding'
+    return DECIDING_STATE
 end

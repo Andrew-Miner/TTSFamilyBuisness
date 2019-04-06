@@ -5,11 +5,13 @@ Truce = Card:new('Truce',
                  'Green', 1, false)
 
 function Truce:new()
-    local self = setmetatable({}, Truce)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
-function Truce:cardFunction(playerColor, closestColor)
+function Truce:useScript(gameState, playerColor)
     HitList:stopMobWar()
-    return 'deciding'
+    return DECIDING_STATE
 end

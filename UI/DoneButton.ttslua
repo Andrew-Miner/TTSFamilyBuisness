@@ -1,0 +1,29 @@
+
+DoneButton = {
+    callback = nil
+}
+
+function DoneButton:setCallback(callback)
+    self.callback = callback
+end
+
+function DoneButton:getCallback()
+    return self.callback
+end
+
+function DoneButton:show()
+    UI.show('doneButton')
+end
+
+function DoneButton:hide()
+    UI.hide('doneButton')
+end
+
+function DoneButton:setVisibility(playerColor)
+    UI.setAttribute('doneButton', 'visibility', playerColor)
+    UI.setAttribute('doneButton', 'textColor', 'white')
+end
+
+function click_ActionDone(player, _, idValue)
+    DoneButton.callback(player, _, idValue)
+end

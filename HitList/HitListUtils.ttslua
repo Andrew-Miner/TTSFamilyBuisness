@@ -63,7 +63,7 @@ function leftShiftList(hitList, startIndex, shiftAmount)
     local index = startIndex - shiftAmount
     local cur = startIndex
 
-    for i=index, hitList.length(), 1 do
+    for i=index, hitList:length(), 1 do
         hitList.hitList[cur].setPositionSmooth(HitListConsts.positions[i], false, false)
         hitList.hitList[i] = hitList.hitList[cur]
         cur = cur + 1
@@ -84,7 +84,7 @@ function addCardsFromTable(hitList)
 
     for _,obj in pairs(objects) do
         if obj.tag == 'Card' and isMobster(obj) and obj.getLock() ~= true then
-            if contains(deadZone.getObjects(), obj) ~= true then
+            if contains(HitList.deadZone.getObjects(), obj) ~= true then
                 table.insert(newMobs, obj)
             end
         end
@@ -96,7 +96,7 @@ function addCardsFromTable(hitList)
 
     sortMobstersByPos(newMobs)
     for _,mob in ipairs(newMobs) do
-        hitList:addMobster({mob, true})
+        hitList:addMobster(mob, true)
     end
 end
 

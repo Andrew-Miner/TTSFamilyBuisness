@@ -9,7 +9,7 @@ function MobWar:new()
     return o
 end
 
-function MobWar:cardFunction(playerColor, closestColor)
+function MobWar:useScript(gameState, playerColor)
     HitList:startMobWar()
-    return 'deciding'
+    return DECIDING_STATE
 end

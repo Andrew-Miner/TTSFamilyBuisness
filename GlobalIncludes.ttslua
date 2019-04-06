@@ -9,6 +9,7 @@
 #include !/UI/TargetLabel
 #include !/UI/MobMenu
 #include !/HandTracker
+#include !/UI/DoneButton
 
 #include !/Cards/Card
 
@@ -19,15 +20,15 @@
 #include !/Cards/Red/Contracts/DoubleContract
 #include !/Cards/Red/Contracts/PriorityContract
 
-#include !/Cards/Features Still Required/Red/DoubleCross
+#include !/Cards/Red/DoubleCross
 #include !/Cards/Features Still Required/Red/Turncoat
 #include !/Cards/Features Still Required/Red/Vendetta
 #include !/Cards/Features Still Required/Red/Hit
-#include !/Cards/Features Still Required/Red/MobWar
-#include !/Cards/Features Still Required/Red/Ambush
-#include !/Cards/Features Still Required/Red/Massacre
+#include !/Cards/Red/MobWar
+#include !/Cards/Red/Ambush
+#include !/Cards/Red/Massacre
 
-#include !/Cards/Features Still Required/Green/Truce
+#include !/Cards/Green/Truce
 #include !/Cards/Features Still Required/Green/PayOff
 #include !/Cards/Features Still Required/Green/FedCrack
 #include !/Cards/Features Still Required/Green/Intrigue

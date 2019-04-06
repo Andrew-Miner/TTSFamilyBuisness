@@ -130,29 +130,37 @@ function HitList:setLock(lock)
 end
 
 function HitList:processDraw()
+    if self.warActive == false then
+        return
+    end
+
     if self.mobCount == 0 then
         self:stopMobWar()
         return
     end
 
-    for i=1,self.killPerTurn,1 do
+    local count = self.killPerTurn
+    if count > self.mobCount then
+        count = self.mobCount
+    end
+
+    for i=1,count,1 do
         Wait.time(function()
-            if self.mobCount > 0 then
-                self:discardMobster(1, true)
-            end
+            print(self.mobCount)
+            HitList:discardMobsterByIndex(1, true)
         end, 0.5*(i-1))
     end
-    return 0.5*(killPerTurn - 1)
+    return 0.5*(count - 1)
 end
 
-function HitList:discardMobster(index, fast)
+function HitList:discardMobsterByIndex(index, fast)
     if self.mobCount < index then
         return nil
     end
 
     local deadPile = self:getDeadPile()
-    local mobster = self:removeMobsterByIndex(index, HitListConsts.deadPos,
-                                         HitListConsts.listRotation, fast)
+    local mobster = self:removeMobsterByIndex(index, fast, HitListConsts.deadPos,
+                                         HitListConsts.listRotation)
 
     if deadPile ~= nil then
         deadPile.putObject(mobster)
@@ -161,7 +169,7 @@ function HitList:discardMobster(index, fast)
         mobster.setPositionSmooth(HitListConsts.deadPos, false, false)
     end
 
-    local player = PlayerList:getPlayerByMobster(mobster.getName())
+    local player = PlayerList:getPlayerByMob(mobster.getName())
     player:killedMobster()
 
     return mobster
@@ -179,7 +187,7 @@ function HitList:discardMobster(mobCard, fast)
         mobCard.setPositionSmooth(HitListConsts.deadPos, false, fast)
     end
 
-    local player = PlayerList:getPlayerByMobster(mobCard.getName())
+    local player = PlayerList:getPlayerByMob(mobCard.getName())
     player:killedMobster()
 end
 

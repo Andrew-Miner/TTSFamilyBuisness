@@ -5,8 +5,10 @@ PayOff = Card:new('Pay Off',
                   'Green', 1, true, true, 'Pay Off', false)
 
 function PayOff:new()
-    local self = setmetatable({}, PayOff)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 -- TODO: check if leftShift from removeMobsterByIndex interferes width

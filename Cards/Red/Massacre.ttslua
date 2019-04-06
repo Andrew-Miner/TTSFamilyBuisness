@@ -11,10 +11,12 @@ function Massacre:new()
     return o
 end
 
-function Massacre:cardFunction(playerColor, closestColor)
+function Massacre:useScript(gameState, playerColor)
     local length = HitList:length() / HitList:getKillAmount()
-    Wait.time(function()
-        HitList:discardMobster(1, true)
-    end, 0.4*(i-1))
-    return 'deciding'
+    for i=1,length,1 do
+        Wait.time(function()
+            HitList:discardMobsterByIndex(1, true)
+        end, 0.4*(i-1))
+    end
+    return DECIDING_STATE
 end

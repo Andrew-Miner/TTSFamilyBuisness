@@ -5,8 +5,10 @@ Lam = Card:new('Take It On The Lam',
                'Green', 4, false, false, '', true, {'Finger'})
 
 function Lam:new()
-    setmetatable({}, Lam)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function Lam:cardFunction(playerColor, closestColor)

@@ -5,11 +5,13 @@ FedCrack = Card:new('Federal CrackDown',
                     'Green', 1, false)
 
 function FedCrack:new()
-    local self = setmetatable({}, FedCrack)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
-function FedCrack:cardFunction(playerColor, closestColor)
+function FedCrack:useScript(gameState, playerColor)
     local length = HitList:length()
     for i=1,length,1 do
         Wait.time(function()

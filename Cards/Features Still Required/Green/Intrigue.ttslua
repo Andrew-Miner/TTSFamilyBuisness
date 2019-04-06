@@ -5,8 +5,10 @@ Intrigue = Card:new('Intrigue',
                     'Green', 2, false)
 
 function Intrigue:new()
-    setmetatable({}, Intrigue)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 function Intrigue:cardFunction(playerColor, closestColor)

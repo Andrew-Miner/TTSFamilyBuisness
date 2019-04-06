@@ -5,14 +5,20 @@ DoubleCross = Card:new('Double Cross',
                        'Red', 1, false)
 
 function DoubleCross:new()
-    local self = setmetatable({}, DoubleCross)
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
-function DoubleCross:cardFunction(playerColor, closestColor)
-    UI.show('doneButton')
-    UI.setAttribute('doneButton', 'visibility', playerColor)
-    UI.setAttribute('doneButton', 'textColor', 'white')
+function DoubleCross:useScript(gameState, playerColor)
+    DoneButton:show()
+    DoneButton:setVisibility(playerColor)
+    DoneButton:setCallback(
+        function(player, _, idValue)
+            DoubleCross:responseScript(GameManager:getState(), playerColor)
+        end)
+
     local players = PlayerList:getPlayers()
     local off = 0
     for _,p in ipairs(players) do
@@ -26,11 +32,14 @@ function DoubleCross:cardFunction(playerColor, closestColor)
             end
         end
     end
-    return 'organizing_list'
+
+    gameState.id = ACTIVE_STATE
+    return ACTIVE_STATE
 end
 
-function DoubleCross:responseScript(playerColor, responderColor, responseCard)
-    UI.hide('doneButton')
+function DoubleCross:responseScript(gameState, playerColor)
+    DoneButton:hide()
     addCardsFromTable(HitList)
+    GameManager:nextTurn()
     return false
 end
