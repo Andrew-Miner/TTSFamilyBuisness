@@ -93,7 +93,7 @@ function lamMMCallback(playerColor, mobSelection)
     end, 2)
 end
 
-function Lam:responseScript(gameState, player)
+function Lam:responseScript(gameState, playerColor)
     if gameState.id == RESPONSE_STATE then
         UI.hide('counterTime')
         UI.hide('counterCard')

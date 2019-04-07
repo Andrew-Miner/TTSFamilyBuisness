@@ -9,13 +9,17 @@ PlayerObj = {
 }
 
 function PlayerObj:new(color, mobName)
-    setmetatable({}, PlayerObj)
-    self.color = color
-    self.mobName = mobName
-    self.livingMobs = 9
-    self.mobCount = 0
-    self.mobCards = {}
-    return self
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+
+    o.color = color
+    o.mobName = mobName
+    o.livingMobs = 9
+    o.mobCount = 0
+    o.mobCards = {}
+
+    return o
 end
 
 function PlayerObj:isAlive()

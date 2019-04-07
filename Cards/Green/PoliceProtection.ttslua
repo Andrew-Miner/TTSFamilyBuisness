@@ -25,22 +25,8 @@ function PoliceProtection:useScript(gameState, playerColor)
 
     MobMenu:rebuildMenu(mobNames)
     Wait.time(function()
-        --Scheduler:newRepeatingTask({
-            --function(time, repeatCount)
-                --UI.setAttribute('counterTime', 'text', ": " .. tostring(10 - repeatCount))
-                -- TODO: Change xml text
-            --end
-        --}, 1, 1, 10)
-
         MobMenu:show()
         MobMenu:setVisibility(playerColor)
-
-        --UI.show('selectLabel')
-        --UI.show('selectTime')
-
-        --UI.setAttribute('selectTime', 'text', '10')
-        --UI.setAttribute('selectTime', 'visibility', playerColor)
-        --UI.setAttribute('selectLabel', 'visibility', playerColor)
     end,1)
 
     MobMenu:registerCallback(protectionMMCallback)
@@ -61,7 +47,7 @@ function protectionMMCallback(playerColor, mobSelection)
         local mob = HitList:removeMobsterByName(mobData.name)
         player:addMobCard(mob)
     end
-    
+
     Wait.time(function()
         GameManager:nextTurn()
     end, 2)
