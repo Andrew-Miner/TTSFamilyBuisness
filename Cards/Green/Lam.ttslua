@@ -1,0 +1,118 @@
+--#include !/Cards/Card
+
+Lam = Card:new('Take It On The Lam',
+               'Remove 1 mobster from the Hit List.',
+               'Green', 4, false, false, '', true, {'Finger'})
+
+function Lam:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function Lam:useScript(gameState, playerColor)
+    if HitList:length() == 0 then
+        return DECIDING_STATE        -- TODO: Maybe still allow for defense
+    end
+
+    local mobNames = {}
+    local length = HitList:length()
+    for i=length,1,-1 do
+        table.insert(mobNames, HitList:getMobsterByIndex(i).getDescription())
+    end
+
+    Wait.time(function()
+        MobMenu:rebuildMenu(mobNames)
+    end, 0.5)
+
+    Wait.time(function()
+        local vis = nil
+        local found = false
+        local list = PlayerList:getPlayers()
+        for _,player in ipairs(list) do
+            print(player.color)
+            --if player.color == PlayerList:getWhosTurn() then
+                found = true
+            --else
+                if vis ~= nil then
+                    vis = vis .. player.color
+                else
+                    vis = player.color
+                end
+
+                local size = PlayerList:size()
+                if _ ~= size and (_ > size - 1 or found) then
+                        vis = vis .. '|'
+                end
+            --end
+        end
+
+        print('Vis:' .. vis)
+        UI.show('counterTime')
+        UI.show('counterCard')
+        UI.show('counterLabel')
+
+        UI.setAttribute('counterTime', 'text', ': 10')
+        UI.setAttribute('counterTime', 'visibility', vis)
+        UI.setAttribute('counterCard', 'visibility', vis)
+        UI.setAttribute('counterCard', 'text', 'Finger')
+        UI.setAttribute('counterLabel', 'visibility', vis)
+
+        self.timerID = Scheduler:newRepeatingTask({
+            function(time, repeatCount)
+                if repeatCount == 1 then
+                    self.timerID = nil
+                    Lam:responseScript(GameManager:getState(), PlayerList:getWhosTurn())
+                else
+                    UI.setAttribute('counterTime', 'text', ": " .. tostring(repeatCount - 1))
+                end
+            end
+        }, 1, 1, 11)
+    end,1)
+
+    gameState.id = RESPONSE_STATE
+    gameState.anyResponse = true
+    return RESPONSE_STATE
+end
+
+function lamMMCallback(playerColor, mobSelection)
+    local gameState = GameManager:getState()
+    if gameState.id == ACTIVE_STATE and playerColor == PlayerList:getWhosTurn() then
+        MobMenu:unregisterCallback(lamMMCallback)
+        MobMenu:hide()
+
+        local mobData = getMobsterDataByAssetName(mobSelection)
+        local player = PlayerList:getPlayerByMob(getMobByMobsterName(mobData.name))
+        local card = HitList:removeMobsterByName(mobData.name, true, {10, 10, 10}, {0, 0, 0})
+        player:addMobCard(card)
+    end
+
+    Wait.time(function()
+        GameManager:nextTurn()
+    end, 2)
+end
+
+function Lam:responseScript(gameState, player)
+    if gameState.id == RESPONSE_STATE then
+        UI.hide('counterTime')
+        UI.hide('counterCard')
+        UI.hide('counterLabel')
+
+        if self.timerID ~= nil then
+            Scheduler:cancelTask(self.timerID)
+            self.timerID = nil
+        end
+
+        if gameState.responder != nil then
+            return true
+        end
+
+        MobMenu:registerCallback(lamMMCallback)
+        MobMenu:show()
+        MobMenu:setVisibility(playerColor)
+
+        gameState.id = ACTIVE_STATE
+    end
+    return false
+end

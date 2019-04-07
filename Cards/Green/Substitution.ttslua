@@ -1,0 +1,80 @@
+--#include !/Cards/Card
+
+Substitution = TargetCard:new('Substitution',
+                              'Replace 1 mobster on the Hit List with any 1 mobster in play.',
+                              'Green', 2, true, 'Substitute', false)
+
+function Substitution:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function Substitution:useScript(gameState, playerColor)
+    if HitList:length() == 0 then
+        return DECIDING_STATE
+    end
+
+    local target = PlayerList:getPlayer(getPColorByName(TargetLabel:getTarget()))
+    if target:mobsterCount() == 0 then
+        return DECIDING_STATE
+    end
+
+    local mobNames = {}
+    local length = HitList:length()
+    for i=length,1,-1 do
+        table.insert(mobNames, HitList:getMobsterByIndex(i).getDescription())
+        print(mobNames[i])
+    end
+
+    Wait.time(function()
+        MobMenu:rebuildMenu(mobNames)
+    end, 0.25)
+    Wait.time(function()
+        MobMenu:show()
+        MobMenu:setVisibility(playerColor)
+    end, 0.5)
+
+    MobMenu:registerCallback(subMMCallback)
+
+    gameState.id = ACTIVE_STATE
+    return ACTIVE_STATE
+end
+
+function subMMCallback(playerColor, mobSelection)
+    local gameState = GameManager:getState()
+    if gameState.id == ACTIVE_STATE and playerColor == PlayerList:getWhosTurn() then
+        MobMenu:unregisterCallback(subMMCallback)
+        MobMenu:hide()
+
+        local mobData = getMobsterDataByAssetName(mobSelection)
+        local player = PlayerList:getPlayer(playerColor)
+
+        local targetName = TargetLabel:getTarget()
+        local target = PlayerList:getPlayer(getPColorByName(targetName))
+
+        local length = HitList:length()
+        for i=1,length,1 do
+            local m = HitList:getMobsterByIndex(i)
+            if m.getDescription() == mobData.name then
+                local newMob = target:removeMobCard()
+
+                Wait.time(function()
+                    HitList:removeMobster(m, true, {10, 10, 10}, {0, 0, 0})
+                    player:addMobCard(m)
+                end, 0.5)
+
+                Wait.time(function()
+                    if newMob ~= nil then
+                        HitList:insertMobster(newMob, true, i)
+                    end
+                end, 1)
+            end
+        end
+    end
+    
+    Wait.time(function()
+        GameManager:nextTurn()
+    end, 2)
+end

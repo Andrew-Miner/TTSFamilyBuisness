@@ -16,16 +16,29 @@ function Intrigue:useScript(gameState, playerColor)
         return DECIDING_STATE
     end
 
-    DoneButton:show()
-    DoneButton:setVisibility(playerColor)
-    DoneButton:setCallback(
-        function(player, _, idValue)
-            Intrigue:responseScript(GameManager:getState(), playerColor)
-        end)
-
     local mobWar = HitList:isMobWar()
     local killPerTurn = HitList:getKillAmount()
-    print('Mob War: '..tostring(mobWar))
+
+    DoneButton:show()
+    DoneButton:setVisibility(playerColor)
+
+    DoneButton:setCallback(
+        function(player, _, idValue)
+            DoneButton:hide()
+            addCardsFromTable(HitList)
+
+            if mobWar then
+                if not HitList:isMobWar() then
+                    HitList:startMobWar(killPerTurn)
+                else
+                    HitList:setKillAmount(killPerTurn)
+                end
+            elseif not mobWar and HitList:isMobWar() then
+                HitList:stopMobWar()
+            end
+
+            GameManager:nextTurn()
+        end)
 
     local mobs = {}
     local length = HitList:length()
@@ -40,11 +53,4 @@ function Intrigue:useScript(gameState, playerColor)
 
     gameState.id = ACTIVE_STATE
     return ACTIVE_STATE
-end
-
-function Intrigue:responseScript(gameState, playerColor)
-    DoneButton:hide()
-    addCardsFromTable(HitList)
-    GameManager:nextTurn()
-    return false
 end

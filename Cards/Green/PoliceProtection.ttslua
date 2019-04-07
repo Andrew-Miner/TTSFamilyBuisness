@@ -1,0 +1,68 @@
+--#include !/Cards/Card
+
+PoliceProtection = Card:new('Police Protection',
+                            'Remove any 1 mobster from the Hit List.',
+                            'Green', 2, false)
+
+function PoliceProtection:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function PoliceProtection:useScript(gameState, playerColor)
+    if HitList:length() == 0 then
+        return DECIDING_STATE
+    end
+
+    local mobNames = {}
+    local length = HitList:length()
+    for i=length,1,-1 do
+        table.insert(mobNames, HitList:getMobsterByIndex(i).getDescription())
+        print(mobNames[i])
+    end
+
+    MobMenu:rebuildMenu(mobNames)
+    Wait.time(function()
+        --Scheduler:newRepeatingTask({
+            --function(time, repeatCount)
+                --UI.setAttribute('counterTime', 'text', ": " .. tostring(10 - repeatCount))
+                -- TODO: Change xml text
+            --end
+        --}, 1, 1, 10)
+
+        MobMenu:show()
+        MobMenu:setVisibility(playerColor)
+
+        --UI.show('selectLabel')
+        --UI.show('selectTime')
+
+        --UI.setAttribute('selectTime', 'text', '10')
+        --UI.setAttribute('selectTime', 'visibility', playerColor)
+        --UI.setAttribute('selectLabel', 'visibility', playerColor)
+    end,1)
+
+    MobMenu:registerCallback(protectionMMCallback)
+
+    gameState.id = ACTIVE_STATE
+    return ACTIVE_STATE
+end
+
+function protectionMMCallback(playerColor, mobSelection)
+    local gameState = GameManager:getState()
+    if gameState.id == ACTIVE_STATE and playerColor == PlayerList:getWhosTurn() then
+        MobMenu:unregisterCallback(protectionMMCallback)
+        MobMenu:hide()
+
+        local mobData = getMobsterDataByAssetName(mobSelection)
+        local player = PlayerList:getPlayerByMob(getMobByMobsterName(mobData.name))
+
+        local mob = HitList:removeMobsterByName(mobData.name)
+        player:addMobCard(mob)
+    end
+    
+    Wait.time(function()
+        GameManager:nextTurn()
+    end, 2)
+end

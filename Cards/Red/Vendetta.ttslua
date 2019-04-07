@@ -1,0 +1,81 @@
+--#include !/Cards/Card
+--#include !/Scheduler
+
+Vendetta = Card:new('Vendetta',
+                    'Place 2 mobsters from all opponents on the Hit List. Start a Mob War.',
+                    'Red', 1, false, false, 'error', true, {'Safe House'})
+
+
+function Vendetta:useScript(gameState, playerColor)
+    UI.show('counterTime')
+    UI.show('counterCard')
+    UI.show('counterLabel')
+
+    UI.setAttribute('counterTime', 'text', ': 10')
+    UI.setAttribute('counterTime', 'visibility', '')
+    UI.setAttribute('counterCard', 'visibility', '')
+    UI.setAttribute('counterCard', 'text', 'Safe House')
+    UI.setAttribute('counterLabel', 'visibility', '')
+
+    self.timerID = Scheduler:newRepeatingTask({
+        function(time, repeatCount)
+            if repeatCount == 1 then
+                self.timerID = nil
+                Vendetta:responseScript(GameManager:getState(), PlayerList:getWhosTurn())
+            else
+                UI.setAttribute('counterTime', 'text', ": " .. tostring(repeatCount - 1))
+            end
+        end
+    }, 1, 1, 11)
+
+    gameState.id = RESPONSE_STATE
+    gameState.anyResponse = true
+    return RESPONSE_STATE
+end
+
+function Vendetta:responseScript(gameState, playerColor)
+    if gameState.id == RESPONSE_STATE then
+        UI.hide('counterTime')
+        UI.hide('counterCard')
+        UI.hide('counterLabel')
+
+        if self.timerID ~= nil then
+            Scheduler:cancelTask(self.timerID)
+            self.timerID = nil
+        end
+
+        local players = PlayerList:getPlayers()
+        local cPos = 1
+        local count = 0
+        for _,p in ipairs(players) do
+            if p.color ~= gameState.responder and p.color ~= playerColor then
+                for i=1,2,1 do
+                    local card = p:removeMobCard()
+                    if card then
+                        card.setPositionSmooth(HitListConsts.organizingList[cPos], false, false)
+                        card.setRotationSmooth({0, 180, 0}, false, false)
+                        cPos = cPos + 1
+                        count = count + 1
+                    end
+                end
+            end
+        end
+
+        if count > 0 then
+            DoneButton:show()
+            DoneButton:setVisibility(playerColor)
+
+            DoneButton:setCallback(function(player, _, idValue)
+                DoneButton:hide()
+                addCardsFromTable(HitList)
+                HitList:startMobWar(1)
+                local state = GameManager:getState()
+                if state.responder == nil then
+                    Wait.time(function() GameManager:nextTurn() end, 1)
+                else
+                    return true
+                end
+            end)
+        end
+    end
+end

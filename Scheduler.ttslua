@@ -15,7 +15,7 @@
 
 function ScheduledCallback:new(callbackList, delaySeconds, repeatSeconds, repeatTimes)
     local self = setmetatable({}, ScheduledCallback)
-    self.fixedCallTime = Time.fixed_time + delay
+    self.fixedCallTime = Time.fixed_time + delaySeconds
     self.repeatSec = repeatSeconds
     self.repeatTimes = repeatTimes
     self.callbackList = callbackList
@@ -24,18 +24,21 @@ end
 
 function Scheduler:newRepeatingTask(callbackList, delaySec, repeatSec, repeatTimes)
     local task = ScheduledCallback:new(callbackList, delaySec, repeatSec, repeatTimes)
-    table.insert(self.schedule, task)
-    return task
+    return self:scheduleTask(task)
 end
 
 function Scheduler:newTask(callbackList, delaySec)
     local task = ScheduledCallback:new(callbackList, delaySec, nil)
-    self:scheduleTask(task)
-    return task
+    return self:scheduleTask(task)
 end
 
 function Scheduler:scheduleTask(task)
-    table.inert(self.schedule, task)
+    local id
+    repeat
+        id = math.random()
+    until(not self:containsTaskID(id))
+    self.schedule[id] = task
+    return id
 end
 
 function Scheduler:update()
@@ -52,31 +55,48 @@ end
 
 function Scheduler:scheduleFrame()
     local time = Time.fixed_time
-    for i=#self.schedule,1,-1 do
-        if time >= self.schedule[i].fixedCallTime then
-            self:addCBList(self.schedule[i])
-            if self.schedule[i].repeatSec == nil or self.schedule[i].repeatTimes == 0 then
-                table.remove(self.schedule, i)
+    local delete = {}
+    for id,task in pairs(self.schedule) do
+        if time > task.fixedCallTime then
+            self:addCBList(task)
+            if task.repeatSec == nil or task.repeatTimes == 0 then
+                table.insert(delete, id)
             else
-                self.schedule[i].fixedCallTime = time + self.schedule[i].repeatSec
-                self.schedule[i].repeatTimes = self.schedule[i].repeatTimes - 1
+                task.fixedCallTime = time + task.repeatSec
+                task.repeatTimes = task.repeatTimes - 1
             end
+        end
+    end
+
+    for _,id in ipairs(delete) do
+        self.schedule[id] = nil
+    end
+end
+
+function Scheduler:cancelTask(taskID)
+    self.schedule[taskID] = nil
+end
+
+function Scheduler:addCBList(task)
+    if self.nextFrameCBs == nil then
+        self.nextFrameCBs = {}
+    end
+    table.insert(self.nextFrameCBs, task)
+end
+
+function Scheduler:executeCBList(list, time)
+    for _,task in ipairs(list) do
+        for _,cb in ipairs(task.callbackList) do
+            cb(time, task.repeatTimes)
         end
     end
 end
 
-function Scheduler:addCBList(callbacks)
-    if self.nextFrameCBs == nil then
-        self.nextFrameCBs = {}
+function Scheduler:containsTaskID(taskID)
+    for id,cb in pairs(self.schedule) do
+        if id == taskID then
+            return true
+        end
     end
-
-    for _,cb in ipairs(callbacks) do
-        table.insert(self.nextFrameCBs, cb)
-    end
-end
-
-function Scheduler:executeCBList(list, time)
-    for _,cb in ipairs(list) do
-        cb(time)
-    end
+    return false
 end

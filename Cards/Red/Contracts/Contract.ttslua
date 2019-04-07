@@ -83,22 +83,9 @@ function Contract:isValidDrop(gameState, playerColor, object)
     return false
 end
 
---function Contract:pickUpEvent(gameState, playerColor)
---    print(gameState.id)
---    if gameState.id == DECIDING_STATE then
---        TargetLabel:show()
---        TargetLabel:updateTarget(gameState)
---    end
---end
-
---function Contract:dropEvent(gameState, playerColor)
---    if gameState.id == DECIDING_STATE then
---        TargetLabel:hide()
---    end
---end
-
---function Contract:updateEvent(gameState, playerColor)
---    if gameState.id == DECIDING_STATE then
---        TargetLabel:updateTarget(gameState)
---    end
---end
+function sick_onClick(player, _, idValue)
+    local state = GameManager:getState()
+    local p = PlayerList:getWhosTurn()
+    state.attackerData.cardObj:responseScript(state, p)
+    GameManager:nextTurn()
+end

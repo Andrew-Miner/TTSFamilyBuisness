@@ -21,14 +21,10 @@ function HandTracker:clear()
 end
 
 function HandTracker:pickUpEvent(playerColor, object)
-    print('in')
     self.holding[playerColor] = nil
-    print('reset')
     if object.tag == 'Card' then
-        print('set')
         self.holding[playerColor] = {card = object, owned = false}
         if CARD_OBJS[object.getName()] ~= nil then
-            print('found')
             self.holding[playerColor].type = CARD_TYPE
             self.holding[playerColor].cardObj = CARD_OBJS[object.getName()]
             if contains(Player[playerColor].getHandObjects(), object) then

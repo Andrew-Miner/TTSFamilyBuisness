@@ -22,8 +22,8 @@
 #include !/Cards/Red/Contracts/PriorityContract
 
 #include !/Cards/Red/DoubleCross
-#include !/Cards/Features Still Required/Red/Turncoat
-#include !/Cards/Features Still Required/Red/Vendetta
+#include !/Cards/Red/Turncoat
+#include !/Cards/Red/Vendetta
 #include !/Cards/Red/Hit
 #include !/Cards/Red/MobWar
 #include !/Cards/Red/Ambush
@@ -33,9 +33,9 @@
 #include !/Cards/Green/PayOff
 #include !/Cards/Green/FedCrack
 #include !/Cards/Green/Intrigue
-#include !/Cards/Features Still Required/Green/Lam
-#include !/Cards/Features Still Required/Green/PoliceProtection
-#include !/Cards/Features Still Required/Green/Substitution
+#include !/Cards/Green/Lam
+#include !/Cards/Green/PoliceProtection
+#include !/Cards/Green/Substitution
 
 #include !/Cards/Blue/BlueCards
 

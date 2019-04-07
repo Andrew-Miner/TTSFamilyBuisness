@@ -1,0 +1,96 @@
+--#include !/Cards/Card
+--#include !/MobMenu
+
+-- TODO: bring back out players
+
+Turncoat = TargetCard:new('Turncoat',
+                    'Switch 1 discarded mobster (of player with least) with 1 in play (of player with most).',
+                    'Red', 1, true, 'Kill Mobster', false)
+
+function Turncoat:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function Turncoat:useScript(gameState, playerColor)
+    local deadPile = HitList:getDeadPile()
+
+    if deadPile ~= nil then
+        local mobsters = {}
+        if deadPile.tag == 'Card' then
+            table.insert(mobsters, deadPile.getDescription())
+        else
+            for _,obj in pairs(deadPile.getObjects()) do
+                table.insert(mobsters, obj.description)
+            end
+        end
+        
+        Wait.time(function()
+            MobMenu:rebuildMenu(mobsters)
+        end,0.5)
+        Wait.time(function()
+            MobMenu:show()
+            MobMenu:setVisibility(playerColor)
+        end,1)
+    end
+
+    local targetColor = TargetLabel:getTarget()
+    local target = PlayerList:getPlayer(getPColorByName(targetColor))
+    local mobster = target:removeMobCard()
+    if mobster ~= nil then
+        HitList:discardMobster(mobster)
+    end
+
+    if deadPile == nil then
+        return DECIDING_STATE
+    end
+
+    MobMenu:registerCallback(turncoatMMCallback)
+    gameState.id = ACTIVE_STATE
+    return ACTIVE_STATE
+end
+
+function turncoatMMCallback(playerColor, mobSelection)
+    local gameState = GameManager:getState()
+    print('called Turncoat')
+    print(gameState.id)
+    if gameState.id == ACTIVE_STATE and playerColor == PlayerList:getWhosTurn() then
+        MobMenu:unregisterCallback(turncoatMMCallback)
+        MobMenu:hide()
+
+        local deadPile = HitList:getDeadPile()
+        if deadPile == nil then
+            GameManager:nextTurn()
+            return
+        end
+
+        local mobData = getMobsterDataByAssetName(mobSelection)
+        local player = PlayerList:getPlayer(playerColor)
+
+        if deadPile.tag == 'Card' then
+            player:addMobCard(deadPile)
+        elseif deadPile.tag == 'Deck' then
+            for _,obj in pairs(deadPile.getObjects()) do
+                if obj.description ==  mobData.name then
+                    local obj = deadPile.takeObject({
+                        position = {10, 10, 10},
+                        smooth = false,
+                        rotation = {0, 0, 0},
+                        guid = obj.guid,
+
+                        callback_function = function(obj)
+                            player:addMobCard(obj)
+                        end
+                    })
+                    break
+                end
+            end
+        end
+    end
+
+    Wait.time(function()
+        GameManager:nextTurn()
+    end, 2)
+end
