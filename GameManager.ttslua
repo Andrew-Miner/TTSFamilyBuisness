@@ -131,10 +131,14 @@ function GameManager:startGame()
         return
     end
 
+
     dealCards()
-    local random = PlayerList:getPlayers()[math.random(PlayerList:size())]
-    PlayerList:setTurn(random.color)
-    printToAll(Player[PlayerList:getWhosTurn()].steam_name .. ' goes first!', 'Green')
+    Wait.time(function()
+        printToAll(Player[PlayerList:getWhosTurn()].steam_name .. ' goes first!', 'Green')
+        local random = PlayerList:getPlayers()[math.random(PlayerList:size())]
+        PlayerList:setTurn(random.color)
+        Shuffler:getCards().deal(1, PlayerList:getWhosTurn())
+    end, 2)
 
     self.setupDeck.interactable = true
     self.setupDeck = nil
@@ -142,29 +146,40 @@ function GameManager:startGame()
     self.inGame = true
 end
 
-function GameManager:endGame()
+function GameManager:endGame(victor)
     self.inGame = false
     self.gameState = nil
     self:hideUI()
 end
 
 function GameManager:nextTurn(playerColor)
+
+    Wait:time(function() HandTracker:discardCards() end, 0.75)
+
     local next = playerColor
     if next == nil then
         next = getLeftOf(PlayerList:getWhosTurn())
     end
     print(next)
     --if next == PlayerList:getWhosTurn() then
-        --setWinnerState(PlayerList:getWhosTurn())
+        --self:endGame(victor)
     --else
-        self.gameState = GameState:new(DECIDING_STATE)
-        PlayerList:setTurn(next)
-        printToAll(Player[next].steam_name .. '\'s turn!', 'Green')
+        Wait.time(function()
+            self.gameState = GameState:new(DECIDING_STATE)
+            PlayerList:setTurn(next)
+            printToAll(Player[next].steam_name .. '\'s turn!', 'Green')
+
+            if playerColor == nil then
+                Shuffler:dealPlayer(next, 1)
+            else
+                Shuffler:dealPlayer(next, 2)
+            end
+            HitList:processDraw()
+        end, 1.5)
     --end
 
     -- TODO: discard cards
     -- TODO: draw Cards
-    HitList:processDraw()
 end
 
 function GameManager:onUpdate()
@@ -183,6 +198,9 @@ function GameManager:onPickUp(playerColor, object)
     end
 
     local holdData = HandTracker:pickUpEvent(playerColor, object)
+    if holdData == nil then
+        return
+    end
 
     if self.gameState.id == DECIDING_STATE then
         if playerColor ~= PlayerList:getWhosTurn() or
@@ -225,8 +243,10 @@ function GameManager:onDrop(playerColor, object)
                     self:nextTurn()
                 end
             else
-                holdData.cardObj:useScript(self.gameState, playerColor)
-                if holdData.cardObj.waitForResponse then
+                HandTracker:addDiscard(holdData.card)
+                local expectedState = holdData.cardObj:useScript(self.gameState, playerColor)
+
+                if holdData.cardObj.waitForResponse and expectedState == RESPONSE_STATE then
                     self.gameState.id = RESPONSE_STATE
                 elseif self.gameState.id == DECIDING_STATE then
                     self:nextTurn()
@@ -241,10 +261,9 @@ function GameManager:onDrop(playerColor, object)
                 aData.cardObj:isValidDrop(self.gameState, playerColor, object) then
                     self.gameState.responder = playerColor
                     self.gameState.responderData = holdData
+                    HandTracker:addDiscard(holdData.card)
                     if aData.cardObj:responseScript(self.gameState, PlayerList:getWhosTurn()) then
                         self:nextTurn(playerColor)
-                    else
-                        self:nextTurn()
                     end
                 end
             end

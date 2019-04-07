@@ -71,11 +71,13 @@ function Vendetta:responseScript(gameState, playerColor)
                 HitList:startMobWar(1)
                 local state = GameManager:getState()
                 if state.responder == nil then
-                    Wait.time(function() GameManager:nextTurn() end, 1)
+                    Wait.time(function() GameManager:nextTurn(gameState.responder) end, 1)
                 else
                     return true
                 end
             end)
+        else
+            GameManager:nextTurn(gameState.responder)
         end
     end
 end

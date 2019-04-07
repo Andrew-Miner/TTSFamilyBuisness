@@ -1,6 +1,6 @@
 HandTracker = {
-    holding = {
-    }
+    holding = {},
+    discardQueue = {}
 }
 
 holdItem = {
@@ -14,6 +14,21 @@ CARD_TYPE = 2
 
 function HandTracker:getHolding(playerColor)
     return self.holding[playerColor]
+end
+
+function HandTracker:getPlayer(card)
+    local holdItem = contains(self.holding, card,
+        function(card, holdItem, key)
+            if card.getGUID() == holdItem.card.getGUID() then
+                return {item = holdItem, playerColor = key}
+            end
+        end)
+
+    if holdItem != false then
+        return holdItem
+    else
+        return nil
+    end
 end
 
 function HandTracker:clear()
@@ -34,9 +49,69 @@ function HandTracker:pickUpEvent(playerColor, object)
             self.holding[playerColor].type = MOB_TYPE
         end
     end
+
     return self.holding[playerColor]
 end
 
 function HandTracker:dropEvent(playerColor, object)
     self.holding[playerColor] = nil
+end
+
+function HandTracker:isHeld(card)
+    local holdTable = contains(self.holding, card,
+        function(card, holdItem)
+            if card.getGUID() == holdItem.card.getGUID() then
+                return {item = holdItem, playerColor = key}
+            end
+        end)
+
+    if holdTable != false then
+        return holdTable
+    else
+        return nil
+    end
+end
+
+function HandTracker:addDiscard(discard)
+    local holdTable = self:isHeld(discard)
+    local holdItem = nil
+    if holdTable == nil then
+        holdItem = { card = discard }
+        if CARD_OBJS[discard.getName()] ~= nil then
+            holdItem.type = CARD_TYPE
+            holdItem.type = CARD_OBJS[discard.getName()]
+        elseif getMobsterData(dicsard) ~= nil then
+            holdItem.type = MOB_TYPE
+        end
+    else
+        holdItem = holdTable.item
+    end
+
+    if holdItem.type == CARD_TYPE then
+        print(holdItem.cardObj.name)
+        table.insert(self.discardQueue, discard.getGUID())
+    end
+end
+
+function HandTracker:discardCards()
+    local discard = function(cardObj, index)
+        if cardObj ~= nil then
+            Wait.time(function()
+                Shuffler:discardCard(cardObj)
+            end, 0.5 * index)
+        end
+    end
+
+    for _,guid in ipairs(self.discardQueue) do
+        local card = getCard(guid, function(obj)
+            discard(obj, _)
+        end)
+
+        if card ~= true and card ~= false then
+            print('we in here')
+            discard(card, _)
+        end
+    end
+
+    self.discardQueue = {}
 end

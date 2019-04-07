@@ -8,10 +8,9 @@ CONSTANTS = {
 -- objects when func is nil
 function contains(list, object, func)
     if list ~= nil then
-        for _,obj in pairs(list) do
-            print(_)
+        for key,obj in pairs(list) do
             if func ~= nil then
-                local r = func(object, obj)
+                local r = func(object, obj, key)
                 if r ~= false and r ~= nil then
                     return r
                 end
@@ -61,6 +60,38 @@ function dealCards()
             end
         end
     end
+end
+
+function getCard(guid, callback)
+    local card = getObjectFromGUID(guid)
+
+    if card ~= nil and card.tag == 'Card' then
+        return card
+    end
+
+    if card == nil then
+        for _,obj in ipairs(getAllObjects()) do
+            if obj.tag == 'Deck' then
+                local dis = Shuffler:getDiscards()
+                if dis ~= nil and obj.getGUID() == dis.getGUID() then
+                    break
+                end
+
+                for _,objTable in ipairs(obj.getObjects()) do
+                    if objTable.guid == guid then
+                        obj.takeObject({
+                            smooth = false,
+                            guid = objTable.guid,
+                            callback_function = callback
+                        })
+                        return true
+                    end
+                end
+            end
+        end
+    end
+
+    return false
 end
 
 function spawnCards()

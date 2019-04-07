@@ -76,8 +76,6 @@ function Contract:isValidDrop(gameState, playerColor, object)
     if gameState.id == DECIDING_STATE then
         return true
     elseif gameState.id == RESPONSE_STATE then
-        print(object.getName())
-        print(self.isResponse)
         return self:isResponse(object)
     end
     return false
@@ -85,6 +83,11 @@ end
 
 function sick_onClick(player, _, idValue)
     local state = GameManager:getState()
+    if state.attackerData == nil or state.attackerData.cardObj == nil then
+        Button:hide()
+        return
+    end
+
     local p = PlayerList:getWhosTurn()
     state.attackerData.cardObj:responseScript(state, p)
     GameManager:nextTurn()

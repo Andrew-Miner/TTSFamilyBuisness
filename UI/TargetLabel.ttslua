@@ -45,7 +45,6 @@ function TargetLabel:updateTarget(gameState)
 
     closestPlayer = getClosestPlayer(gameState.attackerData.card,
     PlayerList:getPlayers(), gameState.attackerData.cardObj.targetSelf)
-    print(closestPlayer.color)
     if closestPlayer ~= nil then
         UI.setAttribute("targetName", "text", Player[closestPlayer.color].steam_name)
         UI.setAttribute("targetName", "color", closestPlayer.color)
