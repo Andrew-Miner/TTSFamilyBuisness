@@ -161,12 +161,13 @@ function GameManager:nextTurn(playerColor)
         next = getLeftOf(PlayerList:getWhosTurn())
     end
     print(next)
-    --if next == PlayerList:getWhosTurn() then
-        --self:endGame(victor)
-    --else
+    if next == PlayerList:getWhosTurn() then
+        self:endGame(victor)
+    else
+        self.gameState = GameState:new(DECIDING_STATE)
+        PlayerList:setTurn(next)
+
         Wait.time(function()
-            self.gameState = GameState:new(DECIDING_STATE)
-            PlayerList:setTurn(next)
             printToAll(Player[next].steam_name .. '\'s turn!', 'Green')
 
             if playerColor == nil then
@@ -176,7 +177,7 @@ function GameManager:nextTurn(playerColor)
             end
             HitList:processDraw()
         end, 1.5)
-    --end
+    end
 
     -- TODO: discard cards
     -- TODO: draw Cards
