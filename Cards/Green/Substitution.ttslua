@@ -62,7 +62,8 @@ function subMMCallback(playerColor, mobSelection)
 
                 Wait.time(function()
                     HitList:removeMobster(m, true, {10, 10, 10}, {0, 0, 0})
-                    player:addMobCard(m)
+                    local p = PlayerList:getPlayerByMob(m.getName())
+                    p:addMobCard(m)
                 end, 0.5)
 
                 Wait.time(function()
@@ -73,7 +74,7 @@ function subMMCallback(playerColor, mobSelection)
             end
         end
     end
-    
+
     Wait.time(function()
         GameManager:nextTurn()
     end, 2)

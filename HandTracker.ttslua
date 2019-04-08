@@ -79,7 +79,7 @@ function HandTracker:addDiscard(discard)
         holdItem = { card = discard }
         if CARD_OBJS[discard.getName()] ~= nil then
             holdItem.type = CARD_TYPE
-            holdItem.type = CARD_OBJS[discard.getName()]
+            holdItem.cardObj = CARD_OBJS[discard.getName()]
         elseif getMobsterData(dicsard) ~= nil then
             holdItem.type = MOB_TYPE
         end

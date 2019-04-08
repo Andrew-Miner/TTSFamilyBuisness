@@ -162,7 +162,7 @@ function GameManager:nextTurn(playerColor)
     end
     print(next)
     if next == PlayerList:getWhosTurn() then
-        self:endGame(victor)
+        self:endGame(next)
     else
         self.gameState = GameState:new(DECIDING_STATE)
         PlayerList:setTurn(next)
