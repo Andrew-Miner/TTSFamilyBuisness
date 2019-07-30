@@ -24,7 +24,7 @@ function HandTracker:getPlayer(card)
             end
         end)
 
-    if holdItem != false then
+    if holdItem ~= false then
         return holdItem
     else
         return nil
@@ -65,7 +65,7 @@ function HandTracker:isHeld(card)
             end
         end)
 
-    if holdTable != false then
+    if holdTable ~= false then
         return holdTable
     else
         return nil

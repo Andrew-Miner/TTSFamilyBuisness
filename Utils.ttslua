@@ -42,7 +42,7 @@ end
 function clearTable()
     local table = getAllObjects()
     for key,value in pairs(table) do
-        if value.getGUID() != self.getGUID() then
+        if value.getGUID() ~= self.getGUID() then
             if value.tag ~= 'Scripting' and value.tag ~= 'Tile' and value.tag ~= 'Clock' and value.tag ~= 'Checker' then
                 destroyObject(value)
             end

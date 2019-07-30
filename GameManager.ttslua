@@ -168,12 +168,12 @@ function GameManager:nextTurn(playerColor)
         PlayerList:setTurn(next)
 
         Wait.time(function()
-            printToAll(Player[next].steam_name .. '\'s turn!', 'Green')
+            printToAll(Player[PlayerList:getWhosTurn()].steam_name .. '\'s turn!', 'Green')
 
             if playerColor == nil then
-                Shuffler:dealPlayer(next, 1)
+                Shuffler:dealPlayer(PlayerList:getWhosTurn(), 1)
             else
-                Shuffler:dealPlayer(next, 2)
+                Shuffler:dealPlayer(PlayerList:getWhosTurn(), 2)
             end
             HitList:processDraw()
         end, 1.5)

@@ -104,7 +104,7 @@ function Lam:responseScript(gameState, playerColor)
             self.timerID = nil
         end
 
-        if gameState.responder != nil then
+        if gameState.responder ~= nil then
             return true
         end
 
