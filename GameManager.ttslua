@@ -225,7 +225,7 @@ function GameManager:onDrop(playerColor, object)
 
     local holdData = HandTracker:getHolding(playerColor)
     if holdData == nil or holdData.owned ~= true or
-    holdData.card.getGUID() ~= object.getGUID() then
+    holdData.card.getGUID() ~= object.getGUID() then -- Seems blatantly wrong?
         HandTracker:dropEvent(playerColor, object)
         return
     end

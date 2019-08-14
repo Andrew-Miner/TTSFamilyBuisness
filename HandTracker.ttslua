@@ -113,5 +113,5 @@ function HandTracker:discardCards()
         end
     end
 
-    self.discardQueue = {}
+    self.discardQueue = {} -- Dont clear queue incase a should be discarded card isnt discarded
 end

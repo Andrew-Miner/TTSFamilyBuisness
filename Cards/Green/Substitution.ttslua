@@ -60,6 +60,9 @@ function subMMCallback(playerColor, mobSelection)
             if m.getDescription() == mobData.name then
                 local newMob = target:removeMobCard()
 
+                local isMobWar = HitList:isMobWar()
+                local killAmount = HitList:getKillAmount()
+
                 Wait.time(function()
                     HitList:removeMobster(m, true, {10, 10, 10}, {0, 0, 0})
                     local p = PlayerList:getPlayerByMob(m.getName())
@@ -69,6 +72,9 @@ function subMMCallback(playerColor, mobSelection)
                 Wait.time(function()
                     if newMob ~= nil then
                         HitList:insertMobster(newMob, true, i)
+                        if HitList:isMobWar() ~= isMobWar then
+                            HitList:startMobWar(killAmount)
+                        end
                     end
                 end, 1)
             end

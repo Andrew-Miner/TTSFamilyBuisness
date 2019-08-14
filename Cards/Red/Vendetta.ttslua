@@ -67,8 +67,12 @@ function Vendetta:responseScript(gameState, playerColor)
 
             DoneButton:setCallback(function(player, _, idValue)
                 DoneButton:hide()
+
                 addCardsFromTable(HitList)
-                HitList:startMobWar(1)
+                if not HitList:isMobWar() then
+                    HitList:startMobWar(1)
+                end
+
                 local state = GameManager:getState()
                 if state.responder == nil then
                     Wait.time(function() GameManager:nextTurn(gameState.responder) end, 1)

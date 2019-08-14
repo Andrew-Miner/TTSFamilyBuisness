@@ -1,10 +1,13 @@
-SUBSTITUTE STOPPED AN IN PROGRESS MOB WAR WHEN USED
+
 Played valentines day which ended the game and didnt kill the very last guy on the list of 2
 Played one match, finished, clicked setup, and then card drawing stopped
 
-Didnt discard finger when fingering lam
-cards in dead scripting zone (intrigue, vendetta) dont get placed on hitlist with addMobstersFromTable
+cards in dead scripting zone (intrigue, vendetta) dont get placed on hitlist with addMobstersFromTable -- Have HitList track dead mobsters instead of using zones.
 Used Double Cross stopped drawing x2
+
+Probably Fixed:
+ - Didnt discard finger when fingering lam - probably solved by changing != to ~=
+ - SUBSTITUTE STOPPED AN IN PROGRESS MOB WAR WHEN USED - added HitList:isMobWar() check and replace
 
 Additions:
 Make sick puppy button say what cards you can send
