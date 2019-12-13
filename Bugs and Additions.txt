@@ -22,3 +22,13 @@ substituted andy mobster for vahans, and it gave vahan to me
 substitute - menu rebuild/show failed for sandwhich, big lag.
 
 police protection didn't draw after being played
+
+
+TODO:
+substitute - menu rebuild/show failed for sandwhich, big lag SO
+Add a timer to substitute and if it finishes replace the earliest mobster
+of player with which ever player has the most amount of mobsters.
+
+Maybe add default time options to all mob menu cards
+
+Make sick puppy button say what cards you can send

@@ -98,7 +98,6 @@ function GameManager:setupGame()
 
         Wait.time(function()
             self.setupDeck = Shuffler:getCards()
-            print(self.setupDeck)
             self.setupDeck.interactable = false
         end, 1)
 
@@ -134,9 +133,9 @@ function GameManager:startGame()
 
     dealCards()
     Wait.time(function()
-        printToAll(Player[PlayerList:getWhosTurn()].steam_name .. ' goes first!', 'Green')
         local random = PlayerList:getPlayers()[math.random(PlayerList:size())]
         PlayerList:setTurn(random.color)
+        printToAll(Player[PlayerList:getWhosTurn()].steam_name .. ' goes first!', 'Green')
         Shuffler:getCards().deal(1, PlayerList:getWhosTurn())
     end, 2)
 
@@ -160,7 +159,7 @@ function GameManager:nextTurn(playerColor)
     if next == nil then
         next = getLeftOf(PlayerList:getWhosTurn())
     end
-    print(next)
+
     if next == PlayerList:getWhosTurn() then
         self:endGame(next)
     else
@@ -178,9 +177,6 @@ function GameManager:nextTurn(playerColor)
             HitList:processDraw()
         end, 1.5)
     end
-
-    -- TODO: discard cards
-    -- TODO: draw Cards
 end
 
 function GameManager:onUpdate()
@@ -225,7 +221,7 @@ function GameManager:onDrop(playerColor, object)
 
     local holdData = HandTracker:getHolding(playerColor)
     if holdData == nil or holdData.owned ~= true or
-    holdData.card.getGUID() ~= object.getGUID() then -- Seems blatantly wrong?
+    holdData.card.getGUID() ~= object.getGUID() then
         HandTracker:dropEvent(playerColor, object)
         return
     end

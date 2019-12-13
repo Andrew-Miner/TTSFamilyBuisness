@@ -1,0 +1,18 @@
+-- Written By Andrew Miner
+#include !/GameManager
+
+function onLoad()
+    GameManager:onLoad()
+end
+
+function onUpdate()
+    GameManager:onUpdate()
+end
+
+function onObjectPickUp(playerColor, object)
+    GameManager:onPickUp(playerColor, object)
+end
+
+function onObjectDrop(playerColor, object)
+    GameManager:onDrop(playerColor, object)
+end

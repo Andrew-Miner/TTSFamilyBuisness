@@ -34,6 +34,7 @@ function PlayerObj:getMobCards()
     return self.mobCards
 end
 
+-- TODO: Remove player's cards when living mobs < 1
 -- Returns True if isAlive
 -- Returns Flase otherwise
 function PlayerObj:killedMobster()
@@ -44,6 +45,7 @@ function PlayerObj:killedMobster()
     return self.livingMobs > 0
 end
 
+-- TODO: Add player's cards when living mobs goes from 0 to >=1
 -- Returns True if successful
 -- Returns False otherwise
 function PlayerObj:revivedMobster()

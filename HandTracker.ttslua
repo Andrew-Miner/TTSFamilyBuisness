@@ -88,7 +88,6 @@ function HandTracker:addDiscard(discard)
     end
 
     if holdItem.type == CARD_TYPE then
-        print(holdItem.cardObj.name)
         table.insert(self.discardQueue, discard.getGUID())
     end
 end
@@ -108,7 +107,6 @@ function HandTracker:discardCards()
         end)
 
         if card ~= true and card ~= false then
-            print('we in here')
             discard(card, _)
         end
     end
