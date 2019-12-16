@@ -12,9 +12,8 @@ function ContractNoBlue:new()
 end
 
 function ContractNoBlue:useScript(gameState, playerColor)
-    print(TargetLabel:getTarget())
     local target = getPColorByName(TargetLabel:getTarget())
-    print(target)
+    gameState.responder = target
     local player = PlayerList:getPlayer(target)
     if player.mobCount >= 1 then
         local mob = player:removeMobCard()
@@ -22,4 +21,8 @@ function ContractNoBlue:useScript(gameState, playerColor)
     end
 
     return DECIDING_STATE
+end
+
+function ContractNoBlue:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' Contracted ' .. Player[gameState.responder].steam_name .. ' (No Blue Cards)'
 end

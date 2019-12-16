@@ -13,3 +13,7 @@ function MobWar:useScript(gameState, playerColor)
     HitList:startMobWar()
     return DECIDING_STATE
 end
+
+function MobWar:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' started a Mob War'
+end

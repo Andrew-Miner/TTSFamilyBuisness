@@ -21,3 +21,7 @@ function Massacre:useScript(gameState, playerColor)
     end
     return DECIDING_STATE
 end
+
+function Massacre:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' started a ST. Valentine\'s Day Massacre'
+end

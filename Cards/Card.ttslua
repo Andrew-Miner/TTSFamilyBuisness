@@ -79,3 +79,7 @@ end
 function Card:responseScript(gameState, playerColor)
 
 end
+
+function Card:getLogString(gameState, playerColor)
+
+end

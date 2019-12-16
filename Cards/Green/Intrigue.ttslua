@@ -54,3 +54,7 @@ function Intrigue:useScript(gameState, playerColor)
     gameState.id = ACTIVE_STATE
     return ACTIVE_STATE
 end
+
+function Intrigue:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' made the hit list Intriguing'
+end

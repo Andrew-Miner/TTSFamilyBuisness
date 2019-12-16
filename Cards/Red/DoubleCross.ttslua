@@ -49,3 +49,7 @@ function DoubleCross:responseScript(gameState, playerColor)
     GameManager:nextTurn()
     return false
 end
+
+function DoubleCross:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' carried out a Double Cross'
+end

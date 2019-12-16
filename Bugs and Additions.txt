@@ -24,6 +24,9 @@ substitute - menu rebuild/show failed for sandwhich, big lag.
 police protection didn't draw after being played
 
 
+MODERN BUGS:
+Vendetta Errors out when count down finished (only test with 1 player on first turn)
+
 TODO:
 substitute - menu rebuild/show failed for sandwhich, big lag SO
 Add a timer to substitute and if it finishes replace the earliest mobster

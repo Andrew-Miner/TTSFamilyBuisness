@@ -37,3 +37,7 @@ function PriorityContract:responseScript(gameState, playerColor)
     end
     return false
 end
+
+function PriorityContract:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' Priority Contracted ' .. Player[gameState.responder].steam_name
+end

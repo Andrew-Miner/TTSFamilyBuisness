@@ -74,7 +74,9 @@ function Scheduler:scheduleFrame()
 end
 
 function Scheduler:cancelTask(taskID)
-    self.schedule[taskID] = nil
+    if taskID ~= nil then
+        self.schedule[taskID] = nil
+    end
 end
 
 function Scheduler:addCBList(task)

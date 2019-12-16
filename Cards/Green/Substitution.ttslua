@@ -13,10 +13,12 @@ end
 
 function Substitution:useScript(gameState, playerColor)
     if HitList:length() == 0 then
+        gameState.responder = getPColorByName(TargetLabel:getTarget())
         return DECIDING_STATE
     end
 
-    local target = PlayerList:getPlayer(getPColorByName(TargetLabel:getTarget()))
+    gameState.responder = getPColorByName(TargetLabel:getTarget())
+    local target = PlayerList:getPlayer(gameState.responder)
     if target:mobsterCount() == 0 then
         return DECIDING_STATE
     end
@@ -25,7 +27,6 @@ function Substitution:useScript(gameState, playerColor)
     local length = HitList:length()
     for i=length,1,-1 do
         table.insert(mobNames, HitList:getMobsterByIndex(i).getDescription())
-        print(mobNames[i])
     end
 
     Wait.time(function()
@@ -40,6 +41,10 @@ function Substitution:useScript(gameState, playerColor)
 
     gameState.id = ACTIVE_STATE
     return ACTIVE_STATE
+end
+
+function Substitution:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' Substituted his mobster for ' .. Player[gameState.responder].steam_name .. '\'s'
 end
 
 function subMMCallback(playerColor, mobSelection)

@@ -83,8 +83,6 @@ function Shuffler:getCards()
         self:init()
     end
 
-    print(#self.drawZone.getObjects())
-
     for _,card in ipairs(self.drawZone.getObjects()) do
         if card.tag == 'Card' or card.tag == 'Deck' then
             return card

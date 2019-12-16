@@ -1,0 +1,145 @@
+--#include Utils
+
+Logger = {
+    turnStr = nil,
+    waitingStr = nil,
+    log = {}
+}
+
+function Logger:nextTurn(gameState)
+    self.log  = {}
+    self.turnStr = Player[PlayerList:getWhosTurn()].steam_name .. '\'s Turn   '
+    self.waitingStr = 'Waiting For ' .. Player[PlayerList:getWhosTurn()].steam_name .. '...   '
+    self:updateNotes()
+    printToAll(Player[PlayerList:getWhosTurn()].steam_name .. '\'s turn!', 'Green')
+end
+
+function Logger:cardPlayed(gameState)
+    if gameState.id == DECIDING_STATE or gameState.id == ACTIVE_STATE then
+        printToAll(gameState.attackerData.cardObj:getLogString(gameState, PlayerList:getWhosTurn()))
+        --table.insert(self.log, gameState.attackerData.cardObj:getLogString(gameState, PlayerList:getWhosTurn()))
+
+        if gameState.responder ~= nil then
+            self.waitingStr = 'Waiting For ' .. Player[gameState.responder].steam_name .. '...   '
+        elseif gameState.id ~= ACTIVE_STATE then
+            self.waitingStr = nil
+        end
+        self:updateNotes()
+    elseif gameState.id == RESPONSE_STATE then
+        self.waitingStr = nil
+        --table.insert(self.log, gameState.responderData.cardObj:getLogString(gameState, PlayerList:getWhosTurn()))
+        if gameState.responderData ~= nil then
+            printToAll(gameState.responderData.cardObj:getLogString(gameState, PlayerList:getWhosTurn()))
+        else
+            printToAll(gameState.attackerData.cardObj:getLogString(gameState, PlayerList:getWhosTurn()))
+        end
+        self:updateNotes()
+    end
+end
+
+function Logger:cardDiscarded(gameState)
+    self.waitingStr = nil
+    --table.insert(self.log, Player[PlayerList:getWhosTurn()].steam_name .. " discarded " .. gameState.attackerData.card)
+    printToAll(self.log, Player[PlayerList:getWhosTurn()].steam_name .. " discarded " .. gameState.attackerData.card)
+    self:updateNotes()
+end
+
+function Logger:updateNotesss()
+    local note = ''
+    if self.turnStr ~= nil then
+        note = note .. self.turnStr .. '\n'
+    end
+
+    for _,line in ipairs(self.log) do
+        note = note .. line .. '\n'
+    end
+
+    if self.waitingStr ~= nil then
+        note = note .. '\n' .. self.waitingStr .. '\n'
+    end
+
+    Notes.setNotes(note)
+end
+
+function Logger:updateNotes()
+    local maxLen = self:getMaxStr()
+    if maxLen > 29 then
+        maxLen = 29
+    end
+
+    local note = ''
+    if self.turnStr ~= nil then
+        note = '[u]' .. bufferStr(self.turnStr, ' ', maxLen) .. '[/u]\n'
+    end
+
+    if self.waitingStr ~= nil then
+        note = note .. '｜\n' .. bufferStr(self.waitingStr, ' ', maxLen) .. '｜\n'
+    end
+    --note = note .. getRepeatedStr('—', maxLen) .. '\n'
+
+    --for _,line in ipairs(self.log) do
+    --    note = note .. bufferStr(line, ' ', maxLen) .. '\n'
+    --end
+
+    --if self.waitingStr ~= nil then
+    --    note = note .. '\n' .. bufferStr(self.waitingStr, ' ', maxLen) .. '\n'
+    --end
+
+    Notes.setNotes(note)
+end
+
+function Logger:getMaxStr()
+    local max = getLongestString(self.log)
+
+    if self.trunStr ~= nil and string.len(self.turnStr) > longest then
+        max = string.len(self.turnStr)
+    end
+
+    if self.waitingStr ~= nil and string.len(self.waitingStr) > max then
+        max = string.len(self.waitingStr)
+    end
+
+    return max
+end
+
+function Logger:clear()
+    Notes.setNotes('')
+end
+
+function bufferStr(source, char, len, prefix)
+    if source == nil or char == nil or len == nil then
+        return ''
+    end
+
+    local sourceLen = string.len(source)
+    if sourceLen >= len then
+        return source
+    end
+
+    if prefix == true then
+        return getRepeatedStr(char, len - sourceLen) .. source
+    end
+    return source .. getRepeatedStr(char, len - sourceLen)
+end
+
+function getRepeatedStr(str, count)
+    if str == nil or count == nil then return '' end
+    local spaces = ''
+    for i=1,count do spaces = spaces .. str end
+    return spaces
+end
+
+function getLongestString(table)
+    if table == nil then
+        return 0
+    end
+
+    local max = 0
+    for _,line in pairs(table) do
+        if max < string.len(line) then
+            max = string.len(line)
+        end
+    end
+
+    return max
+end

@@ -24,3 +24,7 @@ function FedCrack:useScript(gameState, playerColor)
     end
     return 'deciding'
 end
+
+function FedCrack:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' lobbied for a Federal Crackdown'
+end

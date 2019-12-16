@@ -31,7 +31,7 @@ function Lam:useScript(gameState, playerColor)
         local found = false
         local list = PlayerList:getPlayers()
         for _,player in ipairs(list) do
-            print(player.color)
+            --print(player.color)
             --if player.color == PlayerList:getWhosTurn() then
                 found = true
             --else
@@ -48,7 +48,7 @@ function Lam:useScript(gameState, playerColor)
             --end
         end
 
-        print('Vis:' .. vis)
+        --print('Vis:' .. vis)
         UI.show('counterTime')
         UI.show('counterCard')
         UI.show('counterLabel')
@@ -115,4 +115,8 @@ function Lam:responseScript(gameState, playerColor)
         gameState.id = ACTIVE_STATE
     end
     return false
+end
+
+function Lam:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' played Take It On The Lam'
 end

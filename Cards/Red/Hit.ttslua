@@ -13,9 +13,12 @@ end
 
 function Hit:useScript(gameState, playerColor)
     local target = getPColorByName(TargetLabel:getTarget())
-    local hit = PlayerList:getPlayer(target):removeMobCard()
+    gameState.responder = target
+    local player = PlayerList:getPlayer(target)
+    local hit = player:removeMobCard()
 
     if hit ~= nil then
+        player:killedMobster()
         local deadPile = HitList:getDeadPile()
         if deadPile ~= nil then
             deadPile.putObject(hit)
@@ -33,4 +36,8 @@ function Hit:useScript(gameState, playerColor)
         end
     end
     return DECIDING_STATE
+end
+
+function Hit:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' carried out a Hit on ' .. Player[gameState.responder].steam_name 
 end

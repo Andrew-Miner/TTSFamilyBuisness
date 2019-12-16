@@ -10,6 +10,7 @@
 #include !/UI/MobMenu
 #include !/HandTracker
 #include !/UI/DoneButton
+#include !/Logger
 
 #include !/Cards/Card
 #include !/Cards/TargetCard

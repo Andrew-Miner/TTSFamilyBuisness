@@ -21,9 +21,7 @@ function Contract:new(name, description, count, targetLabel, waitForResponse, re
 end
 
 function Contract:useScript(gameState, playerColor)
-    print(TargetLabel:getTarget())
     local target = getPColorByName(TargetLabel:getTarget())
-    print(target)
 
     if target then
         UI.show('sickButton')
@@ -79,6 +77,10 @@ function Contract:isValidDrop(gameState, playerColor, object)
         return self:isResponse(object)
     end
     return false
+end
+
+function Contract:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' Contracted ' .. Player[gameState.responder].steam_name
 end
 
 function sick_onClick(player, _, idValue)

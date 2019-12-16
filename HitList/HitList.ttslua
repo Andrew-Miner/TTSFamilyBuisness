@@ -146,7 +146,6 @@ function HitList:processDraw()
 
     for i=1,count,1 do
         Wait.time(function()
-            print(self.mobCount)
             HitList:discardMobsterByIndex(1, true)
         end, 0.5*(i-1))
     end

@@ -85,3 +85,7 @@ function Vendetta:responseScript(gameState, playerColor)
         end
     end
 end
+
+function Vendetta:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' carried out their Vendetta'
+end

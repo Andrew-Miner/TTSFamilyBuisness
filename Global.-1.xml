@@ -1,0 +1,169 @@
+<!-- Xml UI. See documentation: https://api.tabletopsimulator.com/ui/introUI/ -->
+<HorizontalLayout
+    padding="0 0 0 880"
+    childForceExpandWidth="false"
+    childForceExpandHeigth="false"
+    childAlignment="LowerCenter"
+    >
+<Text
+    text="Target: "
+    color="white"
+    outline="black"
+    outlineSize="2 2"
+    fontSize="50"
+    id="targetLabel"
+    >
+</Text>
+<Text
+    text="Target"
+    color="red"
+    outline="black"
+    fontSize="50"
+    id="targetName"
+    >
+</Text>
+</HorizontalLayout>
+
+<HorizontalLayout
+    padding="0 0 0 -300"
+    childForceExpandWidth="false"
+    childForceExpandHeigth="false"
+    childAlignment="LowerCenter"
+    >
+<Text
+    text="Counter With A "
+    color="white"
+    outline="black"
+    outlineSize="2 2"
+    fontSize="35"
+    id="counterLabel"
+    >
+</Text>
+<Text
+    text="Finger"
+    color="blue"
+    outline="black"
+    outlineSize="2 2"
+    fontSize="35"
+    id="counterCard"
+    >
+</Text>
+<Text
+    text=": 15"
+    color="white"
+    outline="black"
+    outlineSize="2 2"
+    fontSize="35"
+    id="counterTime"
+    >
+</Text>
+</HorizontalLayout>
+
+<HorizontalLayout
+    padding="0 0 0 -300"
+    childForceExpandWidth="false"
+    childForceExpandHeigth="false"
+    childAlignment="LowerCenter"
+    >
+<Text
+    text="Choose A Mobster: "
+    color="white"
+    outline="black"
+    outlineSize="2 2"
+    fontSize="35"
+    id="selectLabel"
+    >
+</Text>
+<Text
+    text="15"
+    color="white"
+    outline="black"
+    outlineSize="2 2"
+    fontSize="35"
+    id="selectTime"
+    >
+</Text>
+</HorizontalLayout>
+
+<VerticalLayout
+    id="onSickPuppy"
+    height="50"
+    width="280"
+    allowDragging="false"
+    returnToOriginalPositionWhenReleased="false"
+    rectAlignment="LowerCenter"
+    offsetXY="0 220"
+    >
+    <Button
+        colors="#262626|#444444|#111111|#adadad"
+        textColor="white"
+        onClick="sick_onClick"
+        text="Sick Puppy?&#xA;(click here if you can't/don't want to defend)"
+        id="sickButton"
+        >
+    </Button>
+</VerticalLayout>
+
+<VerticalLayout
+    id="doneLayout"
+    height="50"
+    width="75"
+    allowDragging="false"
+    returnToOriginalPositionWhenReleased="false"
+    rectAlignment="LowerCenter"
+    offsetXY="0 220"
+    >
+    <Button
+        colors="#262626|#444444|#111111|#adadad"
+        onClick="click_ActionDone"
+        text="Done"
+        textColor="white"
+        fontSize="25"
+        id="doneButton"
+        >
+    </Button>
+</VerticalLayout>
+
+<Defaults>
+    <Panel class="MobPanel"  color="#8F8478" outline="#635351" outlineSize="2 -2"/>
+    <Button class="mobButton" padding="0 0 145 0" textColor="#FFFFFF" colors="#AD9F91|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)"/>
+    <Image class="mobImage" width="102" height="146" rectAlignment="UpperCenter" offsetXY="0 -3"/>
+</Defaults>
+
+<Panel id="mobSelection" class="MobPanel"
+    width="680"
+    height="500"
+    rectAlignment="UpperCenter"
+    offsetXY="0 -250"
+    allowDragging="true"
+    showAnimation="FadeIn"
+    showAnimationDelay="2"
+    returnToOriginalPositionWhenReleased="false">
+    <VerticalScrollView
+        id="scrollSelection"
+        rectAlignment="LowerCenter"
+        offsetXY="0 -00"
+        scrollSensitivity="40"
+        padding="0 0 50 0"
+        scrollbarColors="#AD9F91|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)"
+        width="680"
+        height="480"
+        color="#DDDDDD">
+        <!--Panel height="1000" rectAlignment="UpperCenter"-->
+        <GridLayout padding="0 20 8 3" spacing="8 8"  height="1400"
+              cellsize="108 152" childAlignment="UpperCenter">
+       </GridLayout>
+    <!--/Panel-->
+    </VerticalScrollView>
+    <Button id="closeButton"
+        width="20"
+        height="20"
+        rectAlignment="UpperRight"
+        color="#990000"
+        textColor="#FFFFFF"
+        text="X"
+        onClick="ff98f8/onClose">
+    </Button>
+    <Text text="Choose a Mobster" alignment="UpperLeft" fontSize="18" offsetXY="5 -3"
+        fontStyle="Bold" color="#FFFFFF"></Text>
+</Panel>

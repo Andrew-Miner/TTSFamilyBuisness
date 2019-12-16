@@ -1,0 +1,215 @@
+-- In Game Menu
+controlActive = false
+scriptsActive = false
+
+function onLoad(save_state)
+    self.interactable = false
+    createOpenCloseButton()
+end
+
+function createOpenCloseButton()
+    local tooltip = "Open Control Panel"
+    if controlActive then
+        tooltip = "Close Control Panel"
+    end
+    self.createButton({
+        click_function="click_toggleControl", function_owner=self,
+        position={0,0,0}, rotation={-45,0,0}, height=400, width=400,
+        color={1,1,1,0}, tooltip=tooltip
+    })
+end
+
+function createFBLabel()
+    --Label
+    self.createButton({
+        label="Family Buisness", click_function="none",
+        position={0,0,2}, height=0, width=0, font_size=1000, font_color={1,1,1}
+    })
+end
+
+function createStartButton()
+    self.createButton({
+        label="Start", click_function="click_start",
+        function_owner=self, tooltip="Start Family Buisness",
+        position={-2.7,0,5}, height=840, width=2400, font_size=650,
+    })
+end
+
+function createSetupButton()
+    if scriptsActive then
+        self.createButton({
+            label="Setup", click_function="click_setup",
+            function_owner=self, tooltip="Setup Game Scripts",
+            position={2.7,0,5}, height=840, width=2400, font_size=650,
+        })
+    else
+        self.createButton({
+            label="Setup", click_function="click_setup",
+            function_owner=self, tooltip="Setup Game Scripts",
+            position={0,0,5}, height=840, width=5000, font_size=650,
+        })
+    end
+end
+
+function createScriptCheckBox()
+    self.createButton({
+        label="Disable Scripts:", click_function="none",
+        position={-0.9,0,7}, height=0, width=0, font_size=620, font_color={1,1,1}
+    })
+
+    local label = ""
+    if scriptsActive == false then
+        label = string.char(10008)
+
+        Global.call('callObjWithParams', {
+            objName = 'GameManager',
+            functionName = 'disable',
+            params = {}
+        })
+    else
+        Global.call('callObjWithParams', {
+            objName = 'GameManager',
+            functionName = 'enable',
+            params = {}
+        })
+    end
+    self.createButton({
+        label=label, click_function="click_checkScript",
+        function_owner=self, tooltip="Check to disable game scripts",
+        position={4.5,0,7}, height=640, width=640, font_size=620,
+    })
+end
+
+--Activated by clicking on menu button
+function click_toggleControl(_, color)
+    if Global.call('callWithParams', {
+        name = 'permissionCheck',
+        params = {color}
+    }) then
+        if not controlActive then
+            --Activate control panel
+            controlActive = true
+            self.clearButtons()
+            createOpenCloseButton()
+            createFBLabel()
+            createSetupButton()
+            createScriptCheckBox()
+
+            if scriptsActive then
+                createStartButton()
+            end
+        else
+            --Deactivate control panel
+            controlActive = false
+            self.clearButtons()
+            self.clearInputs()
+            createOpenCloseButton()
+        end
+    end
+end
+
+function click_start(_, color)
+    if Global.call('callWithParams', {
+        name = 'permissionCheck',
+        params = {color}
+    }) then
+         -- Start
+         Global.call('callObjWithParams', {
+             objName = 'GameManager',
+             functionName = 'startGame',
+             params = {}
+         })
+    end
+end
+
+function click_setup(_, color)
+    if Global.call('callWithParams', {
+        name = 'permissionCheck',
+        params = {color}
+    }) then
+         -- Setup
+         Global.call('callObjWithParams', {
+             objName = 'GameManager',
+             functionName = 'setupGame',
+             params = {}
+         })
+    end
+end
+
+function click_checkScript(_, color)
+    if Global.call('callWithParams', {
+        name = 'permissionCheck',
+        params = {color}
+    }) then
+        local find_func = function(o) return o.click_function=="click_checkScript" end
+        if scriptsActive == true then
+            scriptsActive = false
+            local buttonEntry = findButton(self, find_func)
+            self.editButton({index=buttonEntry.index, label=string.char(10008)})
+            removeStartButton()
+
+            Global.call('callObjWithParams', {
+                objName = 'GameManager',
+                functionName = 'disable',
+                params = {}
+            })
+        else
+            scriptsActive = true
+            local buttonEntry = findButton(self, find_func)
+            self.editButton({index=buttonEntry.index, label=''})
+            addStartButton()
+
+            Global.call('callObjWithParams', {
+                objName = 'GameManager',
+                functionName = 'enable',
+                params = {}
+            })
+
+            if Global.call('callObjWithParams', {
+                objName = 'GameManager',
+                functionName = 'isInGame',
+                params = {}
+            }) then
+                Global.call('callObjWithParams', {
+                    objName = 'GameManager',
+                    functionName = 'endGame',
+                    params = {}
+                })
+            end
+        end
+    end
+end
+
+function removeStartButton()
+    local find_start = function(o) return o.click_function=="click_start" end
+    local find_setup = function(o) return o.click_function=="click_setup" end
+
+    local start = findButton(self, find_start)
+    self.removeButton(start.index)
+
+    local setup = findButton(self, find_setup)
+    self.editButton({index=setup.index, position={0,0,5}, height=840, width=5000})
+end
+
+function addStartButton()
+    local find_start = function(o) return o.click_function=="click_start" end
+    local find_setup = function(o) return o.click_function=="click_setup" end
+
+    local setup = findButton(self, find_setup)
+    self.removeButton(setup.index)
+
+    createStartButton()
+    createSetupButton()
+end
+
+-- TODO: Move to utils
+--Locates a button with a helper function
+function findButton(obj, func)
+    if func==nil then error("No func supplied to findButton") end
+    for _, v in ipairs(obj.getButtons()) do
+        if func(v) then
+            return v
+        end
+    end
+    return nil
+end

@@ -35,3 +35,7 @@ function ContractNoFam:responseScript(gameState, playerColor)
     end
     return false
 end
+
+function ContractNoFam:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' Contracted ' .. Player[gameState.responder].steam_name .. '  (No Family Influence)'
+end

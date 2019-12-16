@@ -135,7 +135,8 @@ function GameManager:startGame()
     Wait.time(function()
         local random = PlayerList:getPlayers()[math.random(PlayerList:size())]
         PlayerList:setTurn(random.color)
-        printToAll(Player[PlayerList:getWhosTurn()].steam_name .. ' goes first!', 'Green')
+        --printToAll(Player[PlayerList:getWhosTurn()].steam_name .. ' goes first!', 'Green')
+        Logger:nextTurn(self.gameState)
         Shuffler:getCards().deal(1, PlayerList:getWhosTurn())
     end, 2)
 
@@ -149,6 +150,8 @@ function GameManager:endGame(victor)
     self.inGame = false
     self.gameState = nil
     self:hideUI()
+
+    Logger:clear()
 end
 
 function GameManager:nextTurn(playerColor)
@@ -167,7 +170,7 @@ function GameManager:nextTurn(playerColor)
         PlayerList:setTurn(next)
 
         Wait.time(function()
-            printToAll(Player[PlayerList:getWhosTurn()].steam_name .. '\'s turn!', 'Green')
+            Logger:nextTurn(self.gameState)
 
             if playerColor == nil then
                 Shuffler:dealPlayer(PlayerList:getWhosTurn(), 1)
@@ -233,15 +236,20 @@ function GameManager:onDrop(playerColor, object)
             local discarded = Shuffler:isDiscarded(object)
             if contains(Player[playerColor].getHandObjects(), object) or discarded or
             holdData.cardObj:isValidDrop(self.gameState, playerColor, object) == false then
-                self.gameState.card = nil
-                self.gameState.cardObj = nil
-
+                -- self.gameState.card = nil
+                -- self.gameState.cardObj = nil -- should be gameState.attackerData.cardObj???
+                self.gameState.attackerData = nil
                 if discarded then
+                    Logger:cardDiscarded(self.gameState)
                     self:nextTurn()
                 end
             else
                 HandTracker:addDiscard(holdData.card)
                 local expectedState = holdData.cardObj:useScript(self.gameState, playerColor)
+
+                -- NM has to be under useScript because useScript
+                -- puts responder into gameState
+                Logger:cardPlayed(self.gameState)
 
                 if holdData.cardObj.waitForResponse and expectedState == RESPONSE_STATE then
                     self.gameState.id = RESPONSE_STATE
@@ -258,6 +266,7 @@ function GameManager:onDrop(playerColor, object)
                 aData.cardObj:isValidDrop(self.gameState, playerColor, object) then
                     self.gameState.responder = playerColor
                     self.gameState.responderData = holdData
+                    Logger:cardPlayed(self.gameState)
                     HandTracker:addDiscard(holdData.card)
                     if aData.cardObj:responseScript(self.gameState, PlayerList:getWhosTurn()) then
                         self:nextTurn(playerColor)

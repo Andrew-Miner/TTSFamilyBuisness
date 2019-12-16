@@ -13,3 +13,7 @@ function Ambush:useScript(gameState, playerColor)
     HitList:startMobWar(2)
     return DECIDING_STATE
 end
+
+function Ambush:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' started an Ambush'
+end

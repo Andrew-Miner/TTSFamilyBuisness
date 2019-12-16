@@ -26,7 +26,7 @@ function Turncoat:useScript(gameState, playerColor)
                 table.insert(mobsters, obj.description)
             end
         end
-        
+
         Wait.time(function()
             MobMenu:rebuildMenu(mobsters)
         end,0.5)
@@ -37,9 +37,11 @@ function Turncoat:useScript(gameState, playerColor)
     end
 
     local targetColor = TargetLabel:getTarget()
-    local target = PlayerList:getPlayer(getPColorByName(targetColor))
+    gameState.responder = getPColorByName(targetColor)
+    local target = PlayerList:getPlayer(gameState.responder)
     local mobster = target:removeMobCard()
     if mobster ~= nil then
+        target:killedMobster()
         HitList:discardMobster(mobster)
     end
 
@@ -50,6 +52,10 @@ function Turncoat:useScript(gameState, playerColor)
     MobMenu:registerCallback(turncoatMMCallback)
     gameState.id = ACTIVE_STATE
     return ACTIVE_STATE
+end
+
+function Turncoat:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' convinced ' .. Player[gameState.responder].steam_name .. '\'s mobster to Turncoat'
 end
 
 function turncoatMMCallback(playerColor, mobSelection)
@@ -68,6 +74,7 @@ function turncoatMMCallback(playerColor, mobSelection)
 
         local mobData = getMobsterDataByAssetName(mobSelection)
         local player = PlayerList:getPlayer(playerColor)
+        player:revivedMobster()
 
         if deadPile.tag == 'Card' then
             player:addMobCard(deadPile)

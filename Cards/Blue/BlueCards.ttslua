@@ -1,12 +1,61 @@
 --#include !/Cards/Card
 
+-- Mob Power -------------------------------------------------------------------
 MobPower = Card:new('Mob Power',
                     'Reverse effect of any 1 Contract (place 1 of contractor\'s mobsters on the Hit List).',
                     'Blue', 3, false)
 
+function MobPower:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function MobPower:getLogString(gameState, playerColor)
+    return Player[gameState.responder].steam_name .. ' countered with their Mob Power'
+end
+
+-- Family Influence ------------------------------------------------------------
 FamilyInfluence = Card:new('Family Influence',
                            'Cancel the effect of any 1 Contract (save 1 mobster).',
                            'Blue', 6, false)
 
+function FamilyInfluence:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function FamilyInfluence:getLogString(gameState, playerColor)
+    return Player[gameState.responder].steam_name .. ' countered with their Family Influence'
+end
+
+-- Finger ----------------------------------------------------------------------
 Finger = Card:new('Finger', 'Cancel 1 Take it on the Lam.', 'Blue', 2, false)
+
+function Finger:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function Finger:getLogString(gameState, playerColor)
+    return Player[gameState.responder].steam_name .. ' Fingered ' .. Player[playerColor].steam_name
+end
+
+-- Safe House ------------------------------------------------------------------
 SafeHouse = Card:new('Safe House', 'Cancels 1 Vendetta.', 'Blue', 1, false)
+
+function SafeHouse:new()
+    local o = {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+function SafeHouse:getLogString(gameState, playerColor)
+    return Player[gameState.responder].steam_name .. ' hid inside of a Safe House'
+end

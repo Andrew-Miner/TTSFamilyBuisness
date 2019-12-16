@@ -14,9 +14,12 @@ end
 -- TODO: check if leftShift from removeMobsterByIndex interferes width
 --       remove card
 function PayOff:useScript(gameState, playerColor)
-    print(TargetLabel:getTarget())
     local length = HitList:length()
     local target = getPColorByName(TargetLabel:getTarget())
+
+    if target ~= playerColor then
+        gameState.responder = target
+    end
 
     for i=length,1,-1 do
         Wait.time(function()
@@ -31,4 +34,11 @@ function PayOff:useScript(gameState, playerColor)
     end
 
     return DECIDING_STATE
+end
+
+function PayOff:getLogString(gameState, playerColor)
+    if gameState.responder == nil then
+        return Player[playerColor].steam_name .. ' Payed Off the right people'
+    end
+    return Player[playerColor].steam_name .. ' Payed Off the right people for ' .. Player[gameState.responder].steam_name 
 end

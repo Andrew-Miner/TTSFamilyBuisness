@@ -32,7 +32,6 @@ function DoubleContract:responseScript(gameState, playerColor)
                 HitList:addMobster(mob, false)
             end
 
-            print(gameState.responder)
             local responder = PlayerList:getPlayer(gameState.responder)
             if responder.mobCount >= 1 then
                 -- Add 1 Defender Mobster to HitList
@@ -55,4 +54,8 @@ function DoubleContract:responseScript(gameState, playerColor)
         HitList:addMobster(mob, false)
     end
     return false
+end
+
+function DoubleContract:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' Double Contracted ' .. Player[gameState.responder].steam_name
 end

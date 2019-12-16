@@ -17,8 +17,8 @@ function MobMenu:rebuildMenu(mobNames)
     local scrollView = self:getScrollView(panel)
     scrollView.children[1].children = {}
 
-    print(scrollView)
-    print(xmlTable)
+    --print(scrollView)
+    --print(xmlTable)
 
     local mobCount = 0
     for _,mob in ipairs(mobNames) do
@@ -26,11 +26,11 @@ function MobMenu:rebuildMenu(mobNames)
         mobCount = mobCount + 1
     end
 
-    print(mobCount)
+    --print(mobCount)
     local width = self:calculateWidth(mobCount)
     local heigth = self:calculateHeigth(mobCount)
-    print('Width: ' .. tostring(width))
-    print('Heigth: ' .. tostring(heigth))
+    --print('Width: ' .. tostring(width))
+    --print('Heigth: ' .. tostring(heigth))
     self:setHeigthP(heigth + 20, panel)
     self:setWidthP(width, panel)
 
@@ -55,9 +55,9 @@ function MobMenu:addMobster(mobName)
 end
 
 function MobMenu:addMobsterSV(mobName, scrollView)
-    print(mobName)
+    --print(mobName)
     local data = getMobsterDataByName(mobName)
-    print(data)
+    --print(data)
     local button = {
         tag = 'Button',
         attributes = {
@@ -99,7 +99,7 @@ end
 
 function MobMenu:calculateWidth(mobCount)
     local width = self.maxWidth * 124
-    print(width)
+    --print(width)
     if mobCount < self.maxWidth then
         width = mobCount * 124
     end
@@ -107,8 +107,8 @@ function MobMenu:calculateWidth(mobCount)
     if width < self.minWidth then
         width = self.minWidth
     end
-    print('width')
-    print(width)
+    --print('width')
+    --print(width)
     return width
 end
 
@@ -163,7 +163,7 @@ function MobMenu:setVisibility(playerColor)
 end
 
 function MobMenu:getScrollView(panelTable)
-    print('scrollViewGet')
+    --print('scrollViewGet')
     for _,child in ipairs(panelTable.children) do
         if child.tag == 'VerticalScrollView' and child.attributes.id == 'scrollSelection' then
             return child

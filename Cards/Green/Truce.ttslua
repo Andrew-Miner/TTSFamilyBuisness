@@ -15,3 +15,7 @@ function Truce:useScript(gameState, playerColor)
     HitList:stopMobWar()
     return DECIDING_STATE
 end
+
+function Truce:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' organized a Truce'
+end

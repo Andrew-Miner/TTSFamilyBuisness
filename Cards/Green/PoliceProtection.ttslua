@@ -20,7 +20,6 @@ function PoliceProtection:useScript(gameState, playerColor)
     local length = HitList:length()
     for i=length,1,-1 do
         table.insert(mobNames, HitList:getMobsterByIndex(i).getDescription())
-        print(mobNames[i])
     end
 
     MobMenu:rebuildMenu(mobNames)
@@ -33,6 +32,10 @@ function PoliceProtection:useScript(gameState, playerColor)
 
     gameState.id = ACTIVE_STATE
     return ACTIVE_STATE
+end
+
+function PoliceProtection:getLogString(gameState, playerColor)
+    return Player[playerColor].steam_name .. ' hired Police Protection'
 end
 
 function protectionMMCallback(playerColor, mobSelection)
