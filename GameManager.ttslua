@@ -238,10 +238,12 @@ function GameManager:onDrop(playerColor, object)
             holdData.cardObj:isValidDrop(self.gameState, playerColor, object) == false then
                 -- self.gameState.card = nil
                 -- self.gameState.cardObj = nil -- should be gameState.attackerData.cardObj???
-                self.gameState.attackerData = nil
                 if discarded then
                     Logger:cardDiscarded(self.gameState)
+                    self.gameState.attackerData = nil
                     self:nextTurn()
+                else
+                    self.gameState.attackerData = nil
                 end
             else
                 HandTracker:addDiscard(holdData.card)
