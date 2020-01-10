@@ -187,7 +187,7 @@ function GameManager:onUpdate()
         return
     end
     Scheduler:update()
-    if self.gameState.attackerData ~= nil and self.gameState.attackerData.cardObj ~= nil then
+    if self.gameState ~= nil and self.gameState.attackerData ~= nil and self.gameState.attackerData.cardObj ~= nil then
         self.gameState.attackerData.cardObj:updateEvent(self.gameState, PlayerList:getWhosTurn())
     end
 end
