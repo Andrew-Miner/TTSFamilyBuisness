@@ -40,7 +40,7 @@ end
 function Logger:cardDiscarded(gameState)
     self.waitingStr = nil
     --table.insert(self.log, Player[PlayerList:getWhosTurn()].steam_name .. " discarded " .. gameState.attackerData.card)
-    printToAll(self.log, Player[PlayerList:getWhosTurn()].steam_name .. " discarded " .. gameState.attackerData.card)
+    printToAll(Player[PlayerList:getWhosTurn()].steam_name .. " discarded " .. gameState.attackerData.cardObj.name)
     self:updateNotes()
 end
 
