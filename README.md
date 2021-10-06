@@ -21,6 +21,6 @@ Both the [`HitList`](https://github.com/Andrew-Miner/TTSFamilyBuisness/tree/mast
 * [`HandTracker`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/HandTracker.ttslua): Tracks each Player's set of cards, what card they are currently holding and whether it belongs to them, etc
 
 ### Constants:
-* [`ColorData`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/ColorData.ttslua): Contains data about each of the seats/colors at the table, including mobster card locations and neighboring colors
-* [`MobsterConstants`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/MobsterConstants.ttslua): Contains data about each of the six teams of mobsters
 * [`Zones`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/Zones.ttslua): Contains the GUIDs of each of the card zones on the table
+* [`MobsterConstants`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/MobsterConstants.ttslua): Contains data about each of the six teams of mobsters
+* [`ColorData`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/ColorData.ttslua): Contains data about each of the seats/colors at the table, including mobster card locations and neighboring colors
