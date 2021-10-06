@@ -17,8 +17,8 @@ Both the [`HitList`](https://github.com/Andrew-Miner/TTSFamilyBuisness/tree/mast
 ### Other Utility Classes:
 * [`Scheduler`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/Scheduler.ttslua): A class that schedules task to be run in the future
 * [`Shuffler`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/Shuffler.ttslua): Handles the main deck of cards and shuffles them when needed
-* [`HandTracker`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/HandTracker.ttslua): Tracks each Player's set of cards, what card they are currently holding and whether it belongs to them, etc
 * [`Logger`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/Logger.ttslua): Keeps a log of each player's actions and makes it visible to the players
+* [`HandTracker`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/HandTracker.ttslua): Tracks each Player's set of cards, what card they are currently holding and whether it belongs to them, etc
 
 ### Constants:
 * [`ColorData`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/ColorData.ttslua): Contains data about each of the seats/colors at the table, including mobster card locations and neighboring colors
