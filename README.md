@@ -26,4 +26,4 @@ Both the [`HitList`](https://github.com/Andrew-Miner/TTSFamilyBuisness/tree/mast
 * [`ColorData`](https://github.com/Andrew-Miner/TTSFamilyBuisness/blob/master/ColorData.ttslua): Contains data about each of the seats/colors at the table, including mobster card locations and neighboring colors
 
 
-Note: Files prefixed with "Old" are from the initial rough draft of this project where I was first learning the Lua language and the Tabletop Simulator API. These files have been left in the repository for reference only.
+Note: Files prefixed with "OLD" are from the initial rough draft of this project where I was first learning the Lua language and the Tabletop Simulator API. These files have been left in the repository for reference only.
